@@ -1,0 +1,17 @@
+{
+	"name": "Demo",
+	"properties": {
+		"content": {
+			"query": "-- Demo https://docs.microsoft.com/es-es/azure/synapse-analytics/sql/tutorial-connect-power-bi-desktop\n\nCREATE DATABASE demo;\nUSE demo;\n\nCREATE EXTERNAL DATA SOURCE AzureOpenData\nWITH ( LOCATION = 'https://azureopendatastorage.blob.core.windows.net/');\n\nCREATE VIEW usPopulationView AS\nSELECT\n    *\nFROM\n    OPENROWSET(\n        BULK 'censusdatacontainer/release/us_population_county/year=20*/*.parquet',\n        DATA_SOURCE = 'AzureOpenData',\n        FORMAT='PARQUET'\n    ) AS uspv;\n\nSELECT * FROM usPopulationView",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "demo",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

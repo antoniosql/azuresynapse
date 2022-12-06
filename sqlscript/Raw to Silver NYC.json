@@ -1,0 +1,17 @@
+{
+	"name": "Raw to Silver NYC",
+	"properties": {
+		"content": {
+			"query": "USE demo \nGO\n\nCREATE EXTERNAL DATA SOURCE adlsv2\nWITH ( LOCATION = 'https://adlsg2synapse.blob.core.windows.net/files');\n\nGO\n\nSELECT TOP 10\n    *\nFROM\n    OPENROWSET(\n        BULK '/uploaded-file.parquet',\n        DATA_SOURCE='adlsv2',\n        FORMAT='PARQUET'\n    ) AS [nyc]\n\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "demo",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
