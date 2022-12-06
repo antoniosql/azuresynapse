@@ -1,0 +1,2 @@
+# azuresynapse
+Azure Synapse Demos
