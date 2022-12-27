@@ -1,0 +1,17 @@
+{
+	"name": "Demo External Table",
+	"properties": {
+		"content": {
+			"query": "\nCREATE EXTERNAL FILE FORMAT census_file_format\nWITH\n(  \n    FORMAT_TYPE = PARQUET,\n    DATA_COMPRESSION = 'org.apache.hadoop.io.compress.SnappyCodec'\n)\n\nDROP EXTERNAL TABLE census_external_table\nGO\nCREATE EXTERNAL TABLE census_external_table\n(\n    decennialTime varchar(20),\n    stateName varchar(100),\n    countyName varchar(100),\n    population int,\n    race varchar(50),\n    sex    varchar(10),\n    minAge int,\n    maxAge int\n)  \nWITH (\n    LOCATION = 'censusdatacontainer/release/us_population_county/year=20*/*.parquet',\n    DATA_SOURCE = AzureOpenData, --population_ds,  \n    FILE_FORMAT = census_file_format\n)\nGO\n\nSELECT TOP 1 * FROM census_external_table",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "demo",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
