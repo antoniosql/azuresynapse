@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "1a2b221b-c218-479e-ac0d-7858b101cf4f"
+				"spark.autotune.trackingId": "f3c4588e-7b81-4972-9703-381b60c92e71"
 			}
 		},
 		"metadata": {
@@ -50,6 +50,19 @@
 		},
 		"cells": [
 			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"![Verne](https://www.vernegroup.com/wp-content/uploads/2021/08/Image-1-1-1.png)"
+				]
+			},
+			{
 				"cell_type": "code",
 				"source": [
 					"import os, sys, time, json, requests\r\n",
@@ -58,6 +71,129 @@
 					"from pyspark.sql.functions import lit, udf, col, split"
 				],
 				"execution_count": 1
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"VISION_API_KEY = '04d6d07a08ef4b48a0af6047e0a01ed1'\r\n",
+					"AZURE_SEARCH_KEY = '8mKkdHmw4bK2ucMWUdpcjroF5MRnzuuyio5UxQRkrtAzSeBrPUTB'\r\n",
+					"search_service = \"cognitive-search-gaib\" #nombre del recurso creado\r\n",
+					"search_index = \"test\""
+				],
+				"execution_count": 12
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"data = spark.read\\\r\n",
+					"  .format(\"csv\")\\\r\n",
+					"  .option(\"header\", True)\\\r\n",
+					"  .load(\"wasbs://publicwasb@mmlspark.blob.core.windows.net/metartworks_sample.csv\")\\\r\n",
+					"  .withColumn(\"searchAction\", lit(\"upload\"))\\\r\n",
+					"  .withColumn(\"Neighbors\", split(col(\"Neighbors\"), \",\").cast(\"array<string>\"))\\\r\n",
+					"  .withColumn(\"Tags\", split(col(\"Tags\"), \",\").cast(\"array<string>\"))\\\r\n",
+					"  .limit(25)"
+				],
+				"execution_count": 3
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from synapse.ml.cognitive import AnalyzeImage\r\n",
+					"from synapse.ml.stages import SelectColumns\r\n",
+					"\r\n",
+					"\r\n",
+					"#define pipeline\r\n",
+					"describeImage = (AnalyzeImage()\r\n",
+					"  .setSubscriptionKey(VISION_API_KEY)\r\n",
+					"  .setLocation(\"eastus\")\r\n",
+					"  .setImageUrlCol(\"PrimaryImageUrl\")\r\n",
+					"  .setOutputCol(\"RawImageDescription\")\r\n",
+					"  .setErrorCol(\"Errors\")\r\n",
+					"  .setVisualFeatures([\"Categories\", \"Tags\", \"Description\", \"Faces\", \"ImageType\", \"Color\", \"Adult\"])\r\n",
+					"  .setConcurrency(5))\r\n",
+					"\r\n",
+					"df2 = describeImage.transform(data)\\\r\n",
+					"  .select(\"*\", \"RawImageDescription.*\").drop(\"Errors\", \"RawImageDescription\")"
+				],
+				"execution_count": 9
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from mmlspark.cognitive import *\r\n",
+					"df2.writeToAzureSearch(\r\n",
+					"  subscriptionKey=AZURE_SEARCH_KEY,\r\n",
+					"  actionCol=\"searchAction\",\r\n",
+					"  serviceName=search_service,\r\n",
+					"  indexName=search_index, #Crea el índice con este nombre\r\n",
+					"  keyCol=\"ObjectID\"\r\n",
+					")"
+				],
+				"execution_count": 14
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"url = 'https://{}.search.windows.net/indexes/{}/docs/search?api-version=2019-05-06'.format(search_service, search_index)\r\n",
+					"requests.post(url, json={\"search\": \"Glass\"}, headers = {\"api-key\": AZURE_SEARCH_KEY}).json()"
+				],
+				"execution_count": 15
 			}
 		]
 	}
