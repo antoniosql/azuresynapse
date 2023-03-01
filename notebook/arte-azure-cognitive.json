@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "86e1d23d-f018-428e-8815-8261d5381fd6"
+				"spark.autotune.trackingId": "e1f3cba3-e1ac-4b08-9035-e38033879ce1"
 			}
 		},
 		"metadata": {
@@ -93,7 +93,7 @@
 					"search_service = \"cognitive-search-gaib\" #nombre del recurso creado\r\n",
 					"search_index = \"test\""
 				],
-				"execution_count": 12
+				"execution_count": 2
 			},
 			{
 				"cell_type": "code",
