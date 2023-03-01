@@ -512,7 +512,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "f92c42ef-c5d2-4247-b526-fbbbe9518ff8"
+						"spark.autotune.trackingId": "9755e0ac-38cc-4565-8891-da2db09f290c"
 					}
 				},
 				"metadata": {
@@ -628,8 +628,6 @@
 							"service_key = \"9a59eba481d94489a6e752242e918488\"\r\n",
 							"service_loc = \"eastus\"\r\n",
 							"\r\n",
-							"# A Bing Search v7 subscription key\r\n",
-							"bing_search_key = \"9034162b27fc42e493ce1c185efc402a\"\r\n",
 							"\r\n",
 							"# An Anomaly Dectector subscription key\r\n",
 							"anomaly_key = \"a4bccd046811464597b70c4c67e6f149\"\r\n",
@@ -935,66 +933,6 @@
 						],
 						"outputs": [],
 						"execution_count": 15
-					},
-					{
-						"cell_type": "markdown",
-						"metadata": {
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"# Bing Image Search"
-						]
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							},
-							"collapsed": false
-						},
-						"source": [
-							"# Number of images Bing will return per query\r\n",
-							"imgsPerBatch = 10\r\n",
-							"# A list of offsets, used to page into the search results\r\n",
-							"offsets = [(i * imgsPerBatch,) for i in range(100)]\r\n",
-							"# Since web content is our data, we create a dataframe with options on that data: offsets\r\n",
-							"bingParameters = spark.createDataFrame(offsets, [\"offset\"])\r\n",
-							"\r\n",
-							"# Run the Bing Image Search service with our text query\r\n",
-							"bingSearch = (\r\n",
-							"    BingImageSearch()\r\n",
-							"    .setSubscriptionKey(bing_search_key)\r\n",
-							"    .setOffsetCol(\"offset\")\r\n",
-							"    .setQuery(\"Martin Luther King Jr. quotes\")\r\n",
-							"    .setCount(imgsPerBatch)\r\n",
-							"    .setOutputCol(\"images\")\r\n",
-							")\r\n",
-							"\r\n",
-							"# Transformer that extracts and flattens the richly structured output of Bing Image Search into a simple URL column\r\n",
-							"getUrls = BingImageSearch.getUrlTransformer(\"images\", \"url\")\r\n",
-							"\r\n",
-							"# This displays the full results returned, uncomment to use\r\n",
-							"display(bingSearch.transform(bingParameters))\r\n",
-							"\r\n",
-							"# Since we have two services, they are put into a pipeline\r\n",
-							"pipeline = PipelineModel(stages=[bingSearch, getUrls])\r\n",
-							"\r\n",
-							"# Show the results of your search: image URLs\r\n",
-							"display(pipeline.transform(bingParameters))"
-						],
-						"outputs": [],
-						"execution_count": 25
 					},
 					{
 						"cell_type": "markdown",
@@ -22826,6 +22764,18 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/SQLVerneDevDedicated')]",
+			"type": "Microsoft.Synapse/workspaces/sqlPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"collation": "SQL_Latin1_General_CP1_CI_AS",
+				"maxSizeBytes": 263882790666240,
+				"annotations": []
+			},
+			"dependsOn": [],
+			"location": "eastus"
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/synapsespark')]",
 			"type": "Microsoft.Synapse/workspaces/bigDataPools",
 			"apiVersion": "2019-06-01-preview",
@@ -22845,18 +22795,6 @@
 				"sparkVersion": "3.2",
 				"isComputeIsolationEnabled": false,
 				"sessionLevelPackagesEnabled": true,
-				"annotations": []
-			},
-			"dependsOn": [],
-			"location": "eastus"
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/SQLVerneDevDedicated')]",
-			"type": "Microsoft.Synapse/workspaces/sqlPools",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"collation": "SQL_Latin1_General_CP1_CI_AS",
-				"maxSizeBytes": 263882790666240,
 				"annotations": []
 			},
 			"dependsOn": [],
