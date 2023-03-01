@@ -263,7 +263,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "d73dfc0e-2d31-49bd-92ba-c13b192ec527"
+						"spark.autotune.trackingId": "e1f3cba3-e1ac-4b08-9035-e38033879ce1"
 					}
 				},
 				"metadata": {
@@ -288,8 +288,7 @@
 						"sparkVersion": "3.2",
 						"nodeCount": 3,
 						"cores": 4,
-						"memory": 28,
-						"automaticScaleJobs": false
+						"memory": 28
 					},
 					"sessionKeepAliveTimeout": 30
 				},
@@ -311,7 +310,6 @@
 					},
 					{
 						"cell_type": "code",
-						"metadata": {},
 						"source": [
 							"import os, sys, time, json, requests\r\n",
 							"from pyspark.ml import Transformer, Estimator, Pipeline\r\n",
@@ -341,7 +339,7 @@
 							"search_index = \"test\""
 						],
 						"outputs": [],
-						"execution_count": 12
+						"execution_count": 2
 					},
 					{
 						"cell_type": "code",
@@ -448,6 +446,688 @@
 						],
 						"outputs": [],
 						"execution_count": 15
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/intro-cognitive-search')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "synapsespark",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "dfa63eeb-e950-4f10-8e59-dfb1e81497c9"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/c3846bb2-f0ac-4dba-a45a-bc4565b3af79/resourceGroups/Synapse/providers/Microsoft.Synapse/workspaces/synapsevernedev/bigDataPools/synapsespark",
+						"name": "synapsespark",
+						"type": "Spark",
+						"endpoint": "https://synapsevernedev.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/synapsespark",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "3.2",
+						"nodeCount": 3,
+						"cores": 4,
+						"memory": 28,
+						"automaticScaleJobs": false
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"![Verne](https://www.vernegroup.com/wp-content/uploads/2021/08/Image-1-1-1.png)\r\n",
+							"\r\n",
+							"https://microsoft.github.io/SynapseML/docs/features/cognitive_services/CognitiveServices%20-%20Overview/"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"from pyspark.sql.functions import udf, col\r\n",
+							"from synapse.ml.io.http import HTTPTransformer, http_udf\r\n",
+							"from requests import Request\r\n",
+							"from pyspark.sql.functions import lit\r\n",
+							"from pyspark.ml import PipelineModel\r\n",
+							"from pyspark.sql.functions import col\r\n",
+							"import os"
+						],
+						"outputs": [],
+						"execution_count": 16
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"from pyspark.sql import SparkSession\r\n",
+							"from synapse.ml.core.platform import *\r\n",
+							"\r\n",
+							"# Bootstrap Spark Session\r\n",
+							"spark = SparkSession.builder.getOrCreate()\r\n",
+							"\r\n",
+							"from synapse.ml.core.platform import materializing_display as display"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"from synapse.ml.cognitive import *\r\n",
+							"\r\n",
+							"# A general Cognitive Services key for Text Analytics, Computer Vision and Form Recognizer (or use separate keys that belong to each service)\r\n",
+							"service_key = find_secret(\"cognitive-api-key\")\r\n",
+							"service_loc = \"eastus\"\r\n",
+							"\r\n",
+							"# A Bing Search v7 subscription key\r\n",
+							"bing_search_key = find_secret(\"bing-search-key\")\r\n",
+							"\r\n",
+							"# An Anomaly Dectector subscription key\r\n",
+							"anomaly_key = find_secret(\"anomaly-api-key\")\r\n",
+							"anomaly_loc = \"westus2\"\r\n",
+							"\r\n",
+							"# A Translator subscription key\r\n",
+							"translator_key = find_secret(\"translator-key\")\r\n",
+							"translator_loc = \"eastus\"\r\n",
+							"\r\n",
+							"# An Azure search key\r\n",
+							"search_key = find_secret(\"azure-search-key\")"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# TEXT ANALYTICS"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Create a dataframe that's tied to it's column names\r\n",
+							"df = spark.createDataFrame(\r\n",
+							"    [\r\n",
+							"        (\"I am so happy today, its sunny!\", \"en-US\"),\r\n",
+							"        (\"I am frustrated by this rush hour traffic\", \"en-US\"),\r\n",
+							"        (\"The cognitive services on spark aint bad\", \"en-US\"),\r\n",
+							"    ],\r\n",
+							"    [\"text\", \"language\"],\r\n",
+							")\r\n",
+							"\r\n",
+							"# Run the Text Analytics service with options\r\n",
+							"sentiment = (\r\n",
+							"    TextSentiment()\r\n",
+							"    .setTextCol(\"text\")\r\n",
+							"    .setLocation(service_loc)\r\n",
+							"    .setSubscriptionKey(service_key)\r\n",
+							"    .setOutputCol(\"sentiment\")\r\n",
+							"    .setErrorCol(\"error\")\r\n",
+							"    .setLanguageCol(\"language\")\r\n",
+							")\r\n",
+							"\r\n",
+							"# Show the results of your text query in a table format\r\n",
+							"display(\r\n",
+							"    sentiment.transform(df).select(\r\n",
+							"        \"text\", col(\"sentiment.document.sentiment\").alias(\"sentiment\")\r\n",
+							"    )\r\n",
+							")"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Text Analytics for Health"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"df = spark.createDataFrame(\r\n",
+							"    [\r\n",
+							"        (\"20mg of ibuprofen twice a day\",),\r\n",
+							"        (\"1tsp of Tylenol every 4 hours\",),\r\n",
+							"        (\"6-drops of Vitamin B-12 every evening\",),\r\n",
+							"    ],\r\n",
+							"    [\"text\"],\r\n",
+							")\r\n",
+							"\r\n",
+							"healthcare = (\r\n",
+							"    AnalyzeHealthText()\r\n",
+							"    .setSubscriptionKey(service_key)\r\n",
+							"    .setLocation(service_loc)\r\n",
+							"    .setLanguage(\"en\")\r\n",
+							"    .setOutputCol(\"response\")\r\n",
+							")\r\n",
+							"\r\n",
+							"display(healthcare.transform(df))"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Translator"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"from pyspark.sql.functions import col, flatten\r\n",
+							"\r\n",
+							"# Create a dataframe including sentences you want to translate\r\n",
+							"df = spark.createDataFrame(\r\n",
+							"    [([\"Hello, what is your name?\", \"Bye\"],)],\r\n",
+							"    [\r\n",
+							"        \"text\",\r\n",
+							"    ],\r\n",
+							")\r\n",
+							"\r\n",
+							"# Run the Translator service with options\r\n",
+							"translate = (\r\n",
+							"    Translate()\r\n",
+							"    .setSubscriptionKey(translator_key)\r\n",
+							"    .setLocation(translator_loc)\r\n",
+							"    .setTextCol(\"text\")\r\n",
+							"    .setToLanguage([\"zh-Hans\"])\r\n",
+							"    .setOutputCol(\"translation\")\r\n",
+							")\r\n",
+							"\r\n",
+							"# Show the results of the translation.\r\n",
+							"display(\r\n",
+							"    translate.transform(df)\r\n",
+							"    .withColumn(\"translation\", flatten(col(\"translation.translations\")))\r\n",
+							"    .withColumn(\"translation\", col(\"translation.text\"))\r\n",
+							"    .select(\"translation\")\r\n",
+							")"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Form Recognizer"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"from pyspark.sql.functions import col, explode\r\n",
+							"\r\n",
+							"# Create a dataframe containing the source files\r\n",
+							"imageDf = spark.createDataFrame(\r\n",
+							"    [\r\n",
+							"        (\r\n",
+							"            \"https://mmlspark.blob.core.windows.net/datasets/FormRecognizer/business_card.jpg\",\r\n",
+							"        )\r\n",
+							"    ],\r\n",
+							"    [\r\n",
+							"        \"source\",\r\n",
+							"    ],\r\n",
+							")\r\n",
+							"\r\n",
+							"# Run the Form Recognizer service\r\n",
+							"analyzeBusinessCards = (\r\n",
+							"    AnalyzeBusinessCards()\r\n",
+							"    .setSubscriptionKey(service_key)\r\n",
+							"    .setLocation(service_loc)\r\n",
+							"    .setImageUrlCol(\"source\")\r\n",
+							"    .setOutputCol(\"businessCards\")\r\n",
+							")\r\n",
+							"\r\n",
+							"# Show the results of recognition.\r\n",
+							"display(\r\n",
+							"    analyzeBusinessCards.transform(imageDf)\r\n",
+							"    .withColumn(\r\n",
+							"        \"documents\", explode(col(\"businessCards.analyzeResult.documentResults.fields\"))\r\n",
+							"    )\r\n",
+							"    .select(\"source\", \"documents\")\r\n",
+							")"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Computer Vision"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Create a dataframe with the image URLs\r\n",
+							"base_url = \"https://raw.githubusercontent.com/Azure-Samples/cognitive-services-sample-data-files/master/ComputerVision/Images/\"\r\n",
+							"df = spark.createDataFrame(\r\n",
+							"    [\r\n",
+							"        (base_url + \"objects.jpg\",),\r\n",
+							"        (base_url + \"dog.jpg\",),\r\n",
+							"        (base_url + \"house.jpg\",),\r\n",
+							"    ],\r\n",
+							"    [\r\n",
+							"        \"image\",\r\n",
+							"    ],\r\n",
+							")\r\n",
+							"\r\n",
+							"# Run the Computer Vision service. Analyze Image extracts infortmation from/about the images.\r\n",
+							"analysis = (\r\n",
+							"    AnalyzeImage()\r\n",
+							"    .setLocation(service_loc)\r\n",
+							"    .setSubscriptionKey(service_key)\r\n",
+							"    .setVisualFeatures(\r\n",
+							"        [\"Categories\", \"Color\", \"Description\", \"Faces\", \"Objects\", \"Tags\"]\r\n",
+							"    )\r\n",
+							"    .setOutputCol(\"analysis_results\")\r\n",
+							"    .setImageUrlCol(\"image\")\r\n",
+							"    .setErrorCol(\"error\")\r\n",
+							")\r\n",
+							"\r\n",
+							"# Show the results of what you wanted to pull out of the images.\r\n",
+							"display(analysis.transform(df).select(\"image\", \"analysis_results.description.tags\"))"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Bing Image Search"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Number of images Bing will return per query\r\n",
+							"imgsPerBatch = 10\r\n",
+							"# A list of offsets, used to page into the search results\r\n",
+							"offsets = [(i * imgsPerBatch,) for i in range(100)]\r\n",
+							"# Since web content is our data, we create a dataframe with options on that data: offsets\r\n",
+							"bingParameters = spark.createDataFrame(offsets, [\"offset\"])\r\n",
+							"\r\n",
+							"# Run the Bing Image Search service with our text query\r\n",
+							"bingSearch = (\r\n",
+							"    BingImageSearch()\r\n",
+							"    .setSubscriptionKey(bing_search_key)\r\n",
+							"    .setOffsetCol(\"offset\")\r\n",
+							"    .setQuery(\"Martin Luther King Jr. quotes\")\r\n",
+							"    .setCount(imgsPerBatch)\r\n",
+							"    .setOutputCol(\"images\")\r\n",
+							")\r\n",
+							"\r\n",
+							"# Transformer that extracts and flattens the richly structured output of Bing Image Search into a simple URL column\r\n",
+							"getUrls = BingImageSearch.getUrlTransformer(\"images\", \"url\")\r\n",
+							"\r\n",
+							"# This displays the full results returned, uncomment to use\r\n",
+							"# display(bingSearch.transform(bingParameters))\r\n",
+							"\r\n",
+							"# Since we have two services, they are put into a pipeline\r\n",
+							"pipeline = PipelineModel(stages=[bingSearch, getUrls])\r\n",
+							"\r\n",
+							"# Show the results of your search: image URLs\r\n",
+							"display(pipeline.transform(bingParameters))"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Speech to Text"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Create a dataframe with our audio URLs, tied to the column called \"url\"\r\n",
+							"df = spark.createDataFrame(\r\n",
+							"    [(\"https://mmlspark.blob.core.windows.net/datasets/Speech/audio2.wav\",)], [\"url\"]\r\n",
+							")\r\n",
+							"\r\n",
+							"# Run the Speech-to-text service to translate the audio into text\r\n",
+							"speech_to_text = (\r\n",
+							"    SpeechToTextSDK()\r\n",
+							"    .setSubscriptionKey(service_key)\r\n",
+							"    .setLocation(service_loc)\r\n",
+							"    .setOutputCol(\"text\")\r\n",
+							"    .setAudioDataCol(\"url\")\r\n",
+							"    .setLanguage(\"en-US\")\r\n",
+							"    .setProfanity(\"Masked\")\r\n",
+							")\r\n",
+							"\r\n",
+							"# Show the results of the translation\r\n",
+							"display(speech_to_text.transform(df).select(\"url\", \"text.DisplayText\"))"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Text to Speech"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"from synapse.ml.cognitive import TextToSpeech\r\n",
+							"\r\n",
+							"fs = \"\"\r\n",
+							"if running_on_databricks():\r\n",
+							"    fs = \"dbfs:\"\r\n",
+							"elif running_on_synapse_internal():\r\n",
+							"    fs = \"Files\"\r\n",
+							"\r\n",
+							"# Create a dataframe with text and an output file location\r\n",
+							"df = spark.createDataFrame(\r\n",
+							"    [\r\n",
+							"        (\r\n",
+							"            \"Reading out loud is fun! Check out aka.ms/spark for more information\",\r\n",
+							"            fs + \"/output.mp3\",\r\n",
+							"        )\r\n",
+							"    ],\r\n",
+							"    [\"text\", \"output_file\"],\r\n",
+							")\r\n",
+							"\r\n",
+							"tts = (\r\n",
+							"    TextToSpeech()\r\n",
+							"    .setSubscriptionKey(service_key)\r\n",
+							"    .setTextCol(\"text\")\r\n",
+							"    .setLocation(service_loc)\r\n",
+							"    .setVoiceName(\"en-US-JennyNeural\")\r\n",
+							"    .setOutputFileCol(\"output_file\")\r\n",
+							")\r\n",
+							"\r\n",
+							"# Check to make sure there were no errors during audio creation\r\n",
+							"display(tts.transform(df))"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Anomaly Detector"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Create a dataframe with the point data that Anomaly Detector requires\r\n",
+							"df = spark.createDataFrame(\r\n",
+							"    [\r\n",
+							"        (\"1972-01-01T00:00:00Z\", 826.0),\r\n",
+							"        (\"1972-02-01T00:00:00Z\", 799.0),\r\n",
+							"        (\"1972-03-01T00:00:00Z\", 890.0),\r\n",
+							"        (\"1972-04-01T00:00:00Z\", 900.0),\r\n",
+							"        (\"1972-05-01T00:00:00Z\", 766.0),\r\n",
+							"        (\"1972-06-01T00:00:00Z\", 805.0),\r\n",
+							"        (\"1972-07-01T00:00:00Z\", 821.0),\r\n",
+							"        (\"1972-08-01T00:00:00Z\", 20000.0),\r\n",
+							"        (\"1972-09-01T00:00:00Z\", 883.0),\r\n",
+							"        (\"1972-10-01T00:00:00Z\", 898.0),\r\n",
+							"        (\"1972-11-01T00:00:00Z\", 957.0),\r\n",
+							"        (\"1972-12-01T00:00:00Z\", 924.0),\r\n",
+							"        (\"1973-01-01T00:00:00Z\", 881.0),\r\n",
+							"        (\"1973-02-01T00:00:00Z\", 837.0),\r\n",
+							"        (\"1973-03-01T00:00:00Z\", 9000.0),\r\n",
+							"    ],\r\n",
+							"    [\"timestamp\", \"value\"],\r\n",
+							").withColumn(\"group\", lit(\"series1\"))\r\n",
+							"\r\n",
+							"# Run the Anomaly Detector service to look for irregular data\r\n",
+							"anamoly_detector = (\r\n",
+							"    SimpleDetectAnomalies()\r\n",
+							"    .setSubscriptionKey(anomaly_key)\r\n",
+							"    .setLocation(anomaly_loc)\r\n",
+							"    .setTimestampCol(\"timestamp\")\r\n",
+							"    .setValueCol(\"value\")\r\n",
+							"    .setOutputCol(\"anomalies\")\r\n",
+							"    .setGroupbyCol(\"group\")\r\n",
+							"    .setGranularity(\"monthly\")\r\n",
+							")\r\n",
+							"\r\n",
+							"# Show the full results of the analysis with the anomalies marked as \"True\"\r\n",
+							"display(\r\n",
+							"    anamoly_detector.transform(df).select(\"timestamp\", \"value\", \"anomalies.isAnomaly\")\r\n",
+							")"
+						],
+						"outputs": [],
+						"execution_count": null
 					}
 				]
 			},
@@ -22135,52 +22815,6 @@
 			},
 			"dependsOn": [],
 			"location": "eastus"
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/intro-cognitive-search')]",
-			"type": "Microsoft.Synapse/workspaces/notebooks",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"nbformat": 4,
-				"nbformat_minor": 2,
-				"sessionProperties": {
-					"driverMemory": "28g",
-					"driverCores": 4,
-					"executorMemory": "28g",
-					"executorCores": 4,
-					"numExecutors": 2,
-					"conf": {
-						"spark.dynamicAllocation.enabled": "false",
-						"spark.dynamicAllocation.minExecutors": "2",
-						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "ec1e32c8-c188-488e-b1bb-6d4a85a9722d"
-					}
-				},
-				"metadata": {
-					"saveOutput": true,
-					"enableDebugMode": false,
-					"kernelspec": {
-						"name": "synapse_pyspark",
-						"display_name": "python"
-					},
-					"language_info": {
-						"name": "python"
-					},
-					"sessionKeepAliveTimeout": 30
-				},
-				"cells": [
-					{
-						"cell_type": "code",
-						"metadata": {},
-						"source": [
-							""
-						],
-						"outputs": [],
-						"execution_count": null
-					}
-				]
-			},
-			"dependsOn": []
 		}
 	]
 }
