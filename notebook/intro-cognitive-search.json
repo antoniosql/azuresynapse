@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "edc3fd26-f291-4790-84cb-65f327463afe"
+				"spark.autotune.trackingId": "b2d203c6-fe96-41d3-a17e-55684947fdeb"
 			}
 		},
 		"metadata": {
@@ -85,7 +85,7 @@
 					"from pyspark.sql.functions import col\r\n",
 					"import os"
 				],
-				"execution_count": 16
+				"execution_count": 3
 			},
 			{
 				"cell_type": "code",
@@ -128,24 +128,24 @@
 					"from synapse.ml.cognitive import *\r\n",
 					"\r\n",
 					"# A general Cognitive Services key for Text Analytics, Computer Vision and Form Recognizer (or use separate keys that belong to each service)\r\n",
-					"service_key = find_secret(\"cognitive-api-key\")\r\n",
+					"service_key = \"9a59eba481d94489a6e752242e918488\"\r\n",
 					"service_loc = \"eastus\"\r\n",
 					"\r\n",
 					"# A Bing Search v7 subscription key\r\n",
-					"bing_search_key = find_secret(\"bing-search-key\")\r\n",
+					"bing_search_key = \"9034162b27fc42e493ce1c185efc402a\"\r\n",
 					"\r\n",
 					"# An Anomaly Dectector subscription key\r\n",
-					"anomaly_key = find_secret(\"anomaly-api-key\")\r\n",
-					"anomaly_loc = \"westus2\"\r\n",
+					"anomaly_key = \"a4bccd046811464597b70c4c67e6f149\"\r\n",
+					"anomaly_loc = \"eastus\"\r\n",
 					"\r\n",
 					"# A Translator subscription key\r\n",
-					"translator_key = find_secret(\"translator-key\")\r\n",
+					"translator_key = \"9a59eba481d94489a6e752242e918488\"\r\n",
 					"translator_loc = \"eastus\"\r\n",
 					"\r\n",
 					"# An Azure search key\r\n",
-					"search_key = find_secret(\"azure-search-key\")"
+					"search_key = \"8mKkdHmw4bK2ucMWUdpcjroF5MRnzuuyio5UxQRkrtAzSeBrPUTB\""
 				],
-				"execution_count": null
+				"execution_count": 23
 			},
 			{
 				"cell_type": "markdown",
@@ -171,7 +171,8 @@
 						"transient": {
 							"deleting": false
 						}
-					}
+					},
+					"collapsed": false
 				},
 				"source": [
 					"# Create a dataframe that's tied to it's column names\r\n",
@@ -202,7 +203,7 @@
 					"    )\r\n",
 					")"
 				],
-				"execution_count": null
+				"execution_count": 6
 			},
 			{
 				"cell_type": "markdown",
@@ -228,7 +229,8 @@
 						"transient": {
 							"deleting": false
 						}
-					}
+					},
+					"collapsed": false
 				},
 				"source": [
 					"df = spark.createDataFrame(\r\n",
@@ -250,7 +252,7 @@
 					"\r\n",
 					"display(healthcare.transform(df))"
 				],
-				"execution_count": null
+				"execution_count": 9
 			},
 			{
 				"cell_type": "markdown",
@@ -276,7 +278,8 @@
 						"transient": {
 							"deleting": false
 						}
-					}
+					},
+					"collapsed": false
 				},
 				"source": [
 					"from pyspark.sql.functions import col, flatten\r\n",
@@ -295,7 +298,7 @@
 					"    .setSubscriptionKey(translator_key)\r\n",
 					"    .setLocation(translator_loc)\r\n",
 					"    .setTextCol(\"text\")\r\n",
-					"    .setToLanguage([\"zh-Hans\"])\r\n",
+					"    .setToLanguage([\"es-es\"])\r\n",
 					"    .setOutputCol(\"translation\")\r\n",
 					")\r\n",
 					"\r\n",
@@ -307,7 +310,7 @@
 					"    .select(\"translation\")\r\n",
 					")"
 				],
-				"execution_count": null
+				"execution_count": 13
 			},
 			{
 				"cell_type": "markdown",
@@ -333,7 +336,8 @@
 						"transient": {
 							"deleting": false
 						}
-					}
+					},
+					"collapsed": false
 				},
 				"source": [
 					"from pyspark.sql.functions import col, explode\r\n",
@@ -368,7 +372,7 @@
 					"    .select(\"source\", \"documents\")\r\n",
 					")"
 				],
-				"execution_count": null
+				"execution_count": 14
 			},
 			{
 				"cell_type": "markdown",
@@ -394,7 +398,8 @@
 						"transient": {
 							"deleting": false
 						}
-					}
+					},
+					"collapsed": false
 				},
 				"source": [
 					"# Create a dataframe with the image URLs\r\n",
@@ -426,7 +431,7 @@
 					"# Show the results of what you wanted to pull out of the images.\r\n",
 					"display(analysis.transform(df).select(\"image\", \"analysis_results.description.tags\"))"
 				],
-				"execution_count": null
+				"execution_count": 15
 			},
 			{
 				"cell_type": "markdown",
@@ -452,7 +457,8 @@
 						"transient": {
 							"deleting": false
 						}
-					}
+					},
+					"collapsed": false
 				},
 				"source": [
 					"# Number of images Bing will return per query\r\n",
@@ -476,7 +482,7 @@
 					"getUrls = BingImageSearch.getUrlTransformer(\"images\", \"url\")\r\n",
 					"\r\n",
 					"# This displays the full results returned, uncomment to use\r\n",
-					"# display(bingSearch.transform(bingParameters))\r\n",
+					"display(bingSearch.transform(bingParameters))\r\n",
 					"\r\n",
 					"# Since we have two services, they are put into a pipeline\r\n",
 					"pipeline = PipelineModel(stages=[bingSearch, getUrls])\r\n",
@@ -484,7 +490,7 @@
 					"# Show the results of your search: image URLs\r\n",
 					"display(pipeline.transform(bingParameters))"
 				],
-				"execution_count": null
+				"execution_count": 25
 			},
 			{
 				"cell_type": "markdown",
@@ -510,7 +516,8 @@
 						"transient": {
 							"deleting": false
 						}
-					}
+					},
+					"collapsed": false
 				},
 				"source": [
 					"# Create a dataframe with our audio URLs, tied to the column called \"url\"\r\n",
@@ -532,7 +539,7 @@
 					"# Show the results of the translation\r\n",
 					"display(speech_to_text.transform(df).select(\"url\", \"text.DisplayText\"))"
 				],
-				"execution_count": null
+				"execution_count": 16
 			},
 			{
 				"cell_type": "markdown",
@@ -558,16 +565,14 @@
 						"transient": {
 							"deleting": false
 						}
-					}
+					},
+					"collapsed": false
 				},
 				"source": [
 					"from synapse.ml.cognitive import TextToSpeech\r\n",
 					"\r\n",
-					"fs = \"\"\r\n",
-					"if running_on_databricks():\r\n",
-					"    fs = \"dbfs:\"\r\n",
-					"elif running_on_synapse_internal():\r\n",
-					"    fs = \"Files\"\r\n",
+					"fs = \"Files\"\r\n",
+					"\r\n",
 					"\r\n",
 					"# Create a dataframe with text and an output file location\r\n",
 					"df = spark.createDataFrame(\r\n",
@@ -592,7 +597,7 @@
 					"# Check to make sure there were no errors during audio creation\r\n",
 					"display(tts.transform(df))"
 				],
-				"execution_count": null
+				"execution_count": 18
 			},
 			{
 				"cell_type": "markdown",
@@ -618,7 +623,8 @@
 						"transient": {
 							"deleting": false
 						}
-					}
+					},
+					"collapsed": false
 				},
 				"source": [
 					"# Create a dataframe with the point data that Anomaly Detector requires\r\n",
@@ -660,7 +666,7 @@
 					"    anamoly_detector.transform(df).select(\"timestamp\", \"value\", \"anomalies.isAnomaly\")\r\n",
 					")"
 				],
-				"execution_count": null
+				"execution_count": 20
 			}
 		]
 	}
