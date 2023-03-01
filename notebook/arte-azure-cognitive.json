@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "e1f3cba3-e1ac-4b08-9035-e38033879ce1"
+				"spark.autotune.trackingId": "a134f306-2d03-42bb-a5cb-d9b922387a7e"
 			}
 		},
 		"metadata": {
@@ -72,7 +72,7 @@
 					"from pyspark.ml.feature import SQLTransformer\r\n",
 					"from pyspark.sql.functions import lit, udf, col, split"
 				],
-				"execution_count": 1
+				"execution_count": 3
 			},
 			{
 				"cell_type": "code",
@@ -93,7 +93,7 @@
 					"search_service = \"cognitive-search-gaib\" #nombre del recurso creado\r\n",
 					"search_index = \"test\""
 				],
-				"execution_count": 2
+				"execution_count": 4
 			},
 			{
 				"cell_type": "code",
@@ -118,7 +118,26 @@
 					"  .withColumn(\"Tags\", split(col(\"Tags\"), \",\").cast(\"array<string>\"))\\\r\n",
 					"  .limit(25)"
 				],
-				"execution_count": 3
+				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"collapsed": false
+				},
+				"source": [
+					"display(data)"
+				],
+				"execution_count": 10
 			},
 			{
 				"cell_type": "code",
@@ -151,7 +170,26 @@
 					"df2 = describeImage.transform(data)\\\r\n",
 					"  .select(\"*\", \"RawImageDescription.*\").drop(\"Errors\", \"RawImageDescription\")"
 				],
-				"execution_count": 9
+				"execution_count": 7
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"collapsed": false
+				},
+				"source": [
+					"display(df2)"
+				],
+				"execution_count": 8
 			},
 			{
 				"cell_type": "code",
@@ -176,7 +214,7 @@
 					"  keyCol=\"ObjectID\"\r\n",
 					")"
 				],
-				"execution_count": 14
+				"execution_count": 11
 			},
 			{
 				"cell_type": "code",
@@ -195,7 +233,7 @@
 					"url = 'https://{}.search.windows.net/indexes/{}/docs/search?api-version=2019-05-06'.format(search_service, search_index)\r\n",
 					"requests.post(url, json={\"search\": \"Glass\"}, headers = {\"api-key\": AZURE_SEARCH_KEY}).json()"
 				],
-				"execution_count": 15
+				"execution_count": 12
 			}
 		]
 	}
