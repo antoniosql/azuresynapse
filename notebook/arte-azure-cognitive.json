@@ -1,5 +1,5 @@
 {
-	"name": "azure-cognitive",
+	"name": "arte-azure-cognitive",
 	"properties": {
 		"description": "https://learn.microsoft.com/es-es/azure/cognitive-services/big-data/recipes/art-explorer ",
 		"nbformat": 4,
@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "f3c4588e-7b81-4972-9703-381b60c92e71"
+				"spark.autotune.trackingId": "86e1d23d-f018-428e-8815-8261d5381fd6"
 			}
 		},
 		"metadata": {
@@ -59,7 +59,9 @@
 					}
 				},
 				"source": [
-					"![Verne](https://www.vernegroup.com/wp-content/uploads/2021/08/Image-1-1-1.png)"
+					"![Verne](https://www.vernegroup.com/wp-content/uploads/2021/08/Image-1-1-1.png)\r\n",
+					"\r\n",
+					"En este ejemplo, usaremos Cognitive Services para agregar anotaciones inteligentes a la colección de acceso abierto del Museo Metropolitano de Arte (MET). Esto nos permitirá crear un motor de búsqueda inteligente mediante Azure Search incluso sin anotaciones manuales"
 				]
 			},
 			{
