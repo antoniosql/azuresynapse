@@ -1,0 +1,176 @@
+{
+	"name": "intro-synapseml",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "synapsespark",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "0b1521ea-a395-44b9-bf6b-4cd3473dc613"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/c3846bb2-f0ac-4dba-a45a-bc4565b3af79/resourceGroups/Synapse/providers/Microsoft.Synapse/workspaces/synapsevernedev/bigDataPools/synapsespark",
+				"name": "synapsespark",
+				"type": "Spark",
+				"endpoint": "https://synapsevernedev.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/synapsespark",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.2",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"![Verne](https://www.vernegroup.com/wp-content/uploads/2021/08/Image-1-1-1.png)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import pandas as pd \r\n",
+					"import numpy as np\r\n",
+					"import os, urllib"
+				],
+				"execution_count": 1
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"dataFile = \"AdultCensusIncome.csv\"\r\n",
+					"\r\n",
+					"if not os.path.isfile(dataFile):\r\n",
+					"    urllib.request.urlretrieve(\"https://mmlspark.azureedge.net/datasets/\" + dataFile, dataFile)\r\n",
+					"data = spark.createDataFrame(pd.read_csv(dataFile, dtype={\" hours-per-week\": np.float64}))\r\n",
+					"data.show(5)"
+				],
+				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"data = data.select([\" education\", \" marital-status\", \" hours-per-week\", \" income\"])\r\n",
+					"train, test = data.randomSplit([0.75, 0.25], seed=123)"
+				],
+				"execution_count": 3
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from synapse.ml.train import TrainClassifier\r\n",
+					"from pyspark.ml.classification import LogisticRegression\r\n",
+					"model = TrainClassifier(model=LogisticRegression(), labelCol=\" income\").fit(train)"
+				],
+				"execution_count": 4
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from synapse.ml.train import ComputeModelStatistics\r\n",
+					"prediction = model.transform(test)\r\n",
+					"metrics = ComputeModelStatistics().transform(prediction)\r\n",
+					"metrics.select('accuracy').show()"
+				],
+				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"help(synapse.ml.train.TrainClassifier)"
+				],
+				"execution_count": 6
+			}
+		]
+	}
+}

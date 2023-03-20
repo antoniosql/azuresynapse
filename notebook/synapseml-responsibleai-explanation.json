@@ -1,0 +1,102 @@
+{
+	"name": "synapseml-responsibleai-explanation",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "synapsespark",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "a89257f8-c368-429b-80a9-d324c1f267a7"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/c3846bb2-f0ac-4dba-a45a-bc4565b3af79/resourceGroups/Synapse/providers/Microsoft.Synapse/workspaces/synapsevernedev/bigDataPools/synapsespark",
+				"name": "synapsespark",
+				"type": "Spark",
+				"endpoint": "https://synapsevernedev.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/synapsespark",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.2",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					""
+				],
+				"execution_count": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import pyspark\r\n",
+					"from IPython import get_ipython\r\n",
+					"from IPython.terminal.interactiveshell import TerminalInteractiveShell\r\n",
+					"from synapse.ml.explainers import *\r\n",
+					"from pyspark.ml import Pipeline\r\n",
+					"from pyspark.ml.classification import LogisticRegression\r\n",
+					"from pyspark.ml.feature import StringIndexer, OneHotEncoder, VectorAssembler\r\n",
+					"from pyspark.sql.types import *\r\n",
+					"from pyspark.sql.functions import *\r\n",
+					"import pandas as pd\r\n",
+					"from pyspark.sql import SparkSession\r\n",
+					"\r\n",
+					"# Bootstrap Spark Session\r\n",
+					"spark = SparkSession.builder.getOrCreate()\r\n",
+					"\r\n",
+					"from synapse.ml.core.platform import running_on_synapse\r\n",
+					"\r\n",
+					"if running_on_synapse():\r\n",
+					"    shell = TerminalInteractiveShell.instance()\r\n",
+					"    shell.define_macro(\"foo\", \"\"\"a,b=10,20\"\"\")\r\n",
+					"    from notebookutils.visualization import display\r\n",
+					"\r\n",
+					"\r\n",
+					"vec_access = udf(lambda v, i: float(v[i]), FloatType())\r\n",
+					"vec2array = udf(lambda vec: vec.toArray().tolist(), ArrayType(FloatType()))"
+				],
+				"execution_count": 7
+			}
+		]
+	}
+}
