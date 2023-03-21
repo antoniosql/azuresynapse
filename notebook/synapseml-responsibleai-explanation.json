@@ -20,7 +20,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "57b84151-e9a7-4a61-ab81-7d444c3cec79"
+				"spark.autotune.trackingId": "74457479-1109-4986-828a-3004493e136a"
 			}
 		},
 		"metadata": {
@@ -45,7 +45,8 @@
 				"sparkVersion": "3.2",
 				"nodeCount": 3,
 				"cores": 4,
-				"memory": 28
+				"memory": 28,
+				"automaticScaleJobs": false
 			},
 			"sessionKeepAliveTimeout": 30
 		},
@@ -94,10 +95,6 @@
 					"\r\n",
 					"from synapse.ml.core.platform import running_on_synapse\r\n",
 					"\r\n",
-					"if running_on_synapse():\r\n",
-					"    shell = TerminalInteractiveShell.instance()\r\n",
-					"    shell.define_macro(\"foo\", \"\"\"a,b=10,20\"\"\")\r\n",
-					"    from notebookutils.visualization import display\r\n",
 					"\r\n",
 					"\r\n",
 					"vec_access = udf(lambda v, i: float(v[i]), FloatType())\r\n",
@@ -116,7 +113,8 @@
 						"transient": {
 							"deleting": false
 						}
-					}
+					},
+					"collapsed": false
 				},
 				"source": [
 					"df = spark.read.parquet(\r\n",
@@ -163,7 +161,7 @@
 					"pipeline = Pipeline(stages=[strIndexer, onehotEnc, vectAssem, lr])\r\n",
 					"model = pipeline.fit(training)"
 				],
-				"execution_count": null
+				"execution_count": 3
 			},
 			{
 				"cell_type": "code",
@@ -176,7 +174,8 @@
 						"transient": {
 							"deleting": false
 						}
-					}
+					},
+					"collapsed": false
 				},
 				"source": [
 					"explain_instances = (\r\n",
@@ -184,7 +183,7 @@
 					")\r\n",
 					"display(explain_instances)"
 				],
-				"execution_count": null
+				"execution_count": 4
 			},
 			{
 				"cell_type": "code",
@@ -212,7 +211,7 @@
 					"\r\n",
 					"shap_df = shap.transform(explain_instances)"
 				],
-				"execution_count": null
+				"execution_count": 5
 			},
 			{
 				"cell_type": "code",
@@ -241,7 +240,7 @@
 					"pd.set_option(\"display.max_colwidth\", None)\r\n",
 					"shaps_local"
 				],
-				"execution_count": null
+				"execution_count": 6
 			},
 			{
 				"cell_type": "code",
@@ -269,7 +268,7 @@
 					"eval_data = shaps_local[features]\r\n",
 					"true_y = np.array(shaps_local[[\"label\"]])"
 				],
-				"execution_count": null
+				"execution_count": 7
 			},
 			{
 				"cell_type": "code",
@@ -296,7 +295,7 @@
 					"        del converted_list[0]\r\n",
 					"        converted_importance_values.append(converted_list)"
 				],
-				"execution_count": null
+				"execution_count": 8
 			},
 			{
 				"cell_type": "code",
@@ -315,7 +314,7 @@
 					"!pip install --upgrade raiwidgets\r\n",
 					"!pip install itsdangerous==2.0.1"
 				],
-				"execution_count": null
+				"execution_count": 9
 			},
 			{
 				"cell_type": "code",
@@ -333,7 +332,7 @@
 				"source": [
 					"!pip install --upgrade interpret-community"
 				],
-				"execution_count": null
+				"execution_count": 10
 			},
 			{
 				"cell_type": "code",
@@ -356,7 +355,7 @@
 					"    converted_importance_values, eval_data, expected_values=bias\r\n",
 					")"
 				],
-				"execution_count": null
+				"execution_count": 11
 			},
 			{
 				"cell_type": "code",
@@ -375,7 +374,7 @@
 					"# view the global importance values\r\n",
 					"global_explanation.global_importance_values"
 				],
-				"execution_count": null
+				"execution_count": 12
 			},
 			{
 				"cell_type": "code",
@@ -394,7 +393,7 @@
 					"# view the local importance values\r\n",
 					"global_explanation.local_importance_values"
 				],
-				"execution_count": null
+				"execution_count": 13
 			},
 			{
 				"cell_type": "code",
@@ -436,7 +435,7 @@
 					"        proba_list = [vector.values.tolist() for vector in prediction]\r\n",
 					"        return proba_list"
 				],
-				"execution_count": null
+				"execution_count": 14
 			},
 			{
 				"cell_type": "code",
@@ -459,7 +458,7 @@
 					"    global_explanation, wrapper(model), dataset=eval_data, true_y=true_y\r\n",
 					")"
 				],
-				"execution_count": null
+				"execution_count": 15
 			}
 		]
 	}
