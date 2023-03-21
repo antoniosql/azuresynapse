@@ -1,5 +1,5 @@
 {
-	"name": "synapse-ml-interpretability",
+	"name": "synapseml-interpretability",
 	"properties": {
 		"description": "https://microsoft.github.io/SynapseML/docs/features/responsible_ai/Interpretability%20-%20Explanation%20Dashboard/",
 		"nbformat": 4,
@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "256afe4a-f63f-4349-92ed-79577cdac63d"
+				"spark.autotune.trackingId": "fdadb111-7613-4586-8e86-01ee4cde112b"
 			}
 		},
 		"metadata": {
