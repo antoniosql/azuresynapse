@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "f8014dcc-2cb0-4c07-b61e-07e002d2a7a1"
+				"spark.autotune.trackingId": "d524c890-a80d-47a9-b1ec-aebcc72cfab2"
 			}
 		},
 		"metadata": {
@@ -69,10 +69,10 @@
 					"\r\n",
 					"from synapse.ml.core.platform import running_on_synapse\r\n",
 					"\r\n",
-					"if running_on_synapse():\r\n",
-					"    shell = TerminalInteractiveShell.instance()\r\n",
-					"    shell.define_macro(\"foo\", \"\"\"a,b=10,20\"\"\")\r\n",
-					"    from notebookutils.visualization import display\r\n",
+					"#if running_on_synapse():\r\n",
+					" #   shell = TerminalInteractiveShell.instance()\r\n",
+					"  #  shell.define_macro(\"foo\", \"\"\"a,b=10,20\"\"\")\r\n",
+					"   # from notebookutils.visualization import display\r\n",
 					"\r\n",
 					""
 				],
