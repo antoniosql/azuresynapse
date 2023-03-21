@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "f20c380e-4862-46f3-afc9-3d9aac7e4397"
+				"spark.autotune.trackingId": "f8014dcc-2cb0-4c07-b61e-07e002d2a7a1"
 			}
 		},
 		"metadata": {
@@ -76,7 +76,7 @@
 					"\r\n",
 					""
 				],
-				"execution_count": 20
+				"execution_count": 3
 			},
 			{
 				"cell_type": "code",
@@ -95,7 +95,7 @@
 					"vec_access = udf(lambda v, i: float(v[i]), FloatType())\r\n",
 					"vec2array = udf(lambda vec: vec.toArray().tolist(), ArrayType(FloatType()))"
 				],
-				"execution_count": 26
+				"execution_count": 4
 			},
 			{
 				"cell_type": "code",
@@ -156,7 +156,7 @@
 					"pipeline = Pipeline(stages=[strIndexer, onehotEnc, vectAssem, lr])\r\n",
 					"model = pipeline.fit(training)"
 				],
-				"execution_count": 22
+				"execution_count": 5
 			},
 			{
 				"cell_type": "code",
@@ -178,7 +178,7 @@
 					")\r\n",
 					"display(explain_instances)"
 				],
-				"execution_count": 23
+				"execution_count": 6
 			},
 			{
 				"cell_type": "code",
@@ -206,7 +206,7 @@
 					"\r\n",
 					"shap_df = shap.transform(explain_instances)"
 				],
-				"execution_count": 24
+				"execution_count": 7
 			},
 			{
 				"cell_type": "code",
@@ -235,7 +235,7 @@
 					"pd.set_option(\"display.max_colwidth\", None)\r\n",
 					"shaps_local"
 				],
-				"execution_count": 27
+				"execution_count": 8
 			},
 			{
 				"cell_type": "code",
@@ -263,7 +263,7 @@
 					"eval_data = shaps_local[features]\r\n",
 					"true_y = np.array(shaps_local[[\"label\"]])"
 				],
-				"execution_count": 28
+				"execution_count": 9
 			},
 			{
 				"cell_type": "code",
@@ -290,7 +290,7 @@
 					"        del converted_list[0]\r\n",
 					"        converted_importance_values.append(converted_list)"
 				],
-				"execution_count": 29
+				"execution_count": 10
 			},
 			{
 				"cell_type": "code",
@@ -309,7 +309,7 @@
 					"!pip install --upgrade raiwidgets\r\n",
 					"!pip install itsdangerous==2.0.1"
 				],
-				"execution_count": 30
+				"execution_count": 11
 			},
 			{
 				"cell_type": "code",
@@ -327,7 +327,7 @@
 				"source": [
 					"!pip install --upgrade interpret-community"
 				],
-				"execution_count": 31
+				"execution_count": 12
 			},
 			{
 				"cell_type": "code",
@@ -350,7 +350,7 @@
 					"    converted_importance_values, eval_data, expected_values=bias\r\n",
 					")"
 				],
-				"execution_count": 32
+				"execution_count": 13
 			},
 			{
 				"cell_type": "code",
@@ -369,7 +369,7 @@
 					"# view the global importance values\r\n",
 					"global_explanation.global_importance_values"
 				],
-				"execution_count": null
+				"execution_count": 14
 			},
 			{
 				"cell_type": "code",
@@ -388,7 +388,7 @@
 					"# view the local importance values\r\n",
 					"global_explanation.local_importance_values"
 				],
-				"execution_count": null
+				"execution_count": 15
 			},
 			{
 				"cell_type": "code",
@@ -430,7 +430,7 @@
 					"        proba_list = [vector.values.tolist() for vector in prediction]\r\n",
 					"        return proba_list"
 				],
-				"execution_count": null
+				"execution_count": 16
 			},
 			{
 				"cell_type": "code",
@@ -453,7 +453,7 @@
 					"    global_explanation, wrapper(model), dataset=eval_data, true_y=true_y\r\n",
 					")"
 				],
-				"execution_count": null
+				"execution_count": 17
 			}
 		]
 	}
