@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "1380569c-251d-4769-91b5-24e7d849455c"
+				"spark.autotune.trackingId": "a8d78f62-5f5b-4e7c-8e00-c839cb328d79"
 			}
 		},
 		"metadata": {
@@ -79,7 +79,7 @@
 					"import numpy as np\r\n",
 					"import os, urllib"
 				],
-				"execution_count": 1
+				"execution_count": 2
 			},
 			{
 				"cell_type": "code",
@@ -91,7 +91,7 @@
 					"data = spark.createDataFrame(pd.read_csv(dataFile, dtype={\" hours-per-week\": np.float64}))\r\n",
 					"data.show(5)"
 				],
-				"execution_count": 2
+				"execution_count": 3
 			},
 			{
 				"cell_type": "code",
@@ -110,7 +110,7 @@
 					"data = data.select([\" education\", \" marital-status\", \" hours-per-week\", \" income\"])\r\n",
 					"train, test = data.randomSplit([0.75, 0.25], seed=123)"
 				],
-				"execution_count": 3
+				"execution_count": 4
 			},
 			{
 				"cell_type": "code",
@@ -130,7 +130,7 @@
 					"from pyspark.ml.classification import LogisticRegression\r\n",
 					"model = TrainClassifier(model=LogisticRegression(), labelCol=\" income\").fit(train)"
 				],
-				"execution_count": 4
+				"execution_count": 5
 			},
 			{
 				"cell_type": "code",
@@ -151,7 +151,7 @@
 					"metrics = ComputeModelStatistics().transform(prediction)\r\n",
 					"metrics.select('accuracy').show()"
 				],
-				"execution_count": 5
+				"execution_count": 6
 			},
 			{
 				"cell_type": "code",
@@ -167,9 +167,9 @@
 					}
 				},
 				"source": [
-					"help(synapse.ml.train.TrainClassifier)"
+					"help(\"synapse.ml.train.TrainClassifier\")"
 				],
-				"execution_count": 6
+				"execution_count": 8
 			}
 		]
 	}
