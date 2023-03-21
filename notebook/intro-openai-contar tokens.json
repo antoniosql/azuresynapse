@@ -1,0 +1,460 @@
+{
+	"name": "intro-openai-contar tokens",
+	"properties": {
+		"description": "https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb",
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "synapsespark",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "5da58fce-e60c-4fa4-86fb-549ed6ee4302"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/c3846bb2-f0ac-4dba-a45a-bc4565b3af79/resourceGroups/Synapse/providers/Microsoft.Synapse/workspaces/synapsevernedev/bigDataPools/synapsespark",
+				"name": "synapsespark",
+				"type": "Spark",
+				"endpoint": "https://synapsevernedev.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/synapsespark",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.2",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"!pip install tiktoken"
+				],
+				"execution_count": 1
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import tiktoken"
+				],
+				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#Cargo un tokenizador concreto\r\n",
+					"encoding = tiktoken.get_encoding(\"cl100k_base\")\r\n",
+					"# o Cargo el tokenizador recomendado para un modelo\r\n",
+					"encoding = tiktoken.encoding_for_model(\"gpt-3.5-turbo\")"
+				],
+				"execution_count": 3
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"encoding.encode(\"tiktoken está genial!\")"
+				],
+				"execution_count": 4
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def num_tokens_from_string(string: str, encoding_name: str) -> int:\r\n",
+					"    \"\"\"Returns the number of tokens in a text string.\"\"\"\r\n",
+					"    encoding = tiktoken.get_encoding(encoding_name)\r\n",
+					"    num_tokens = len(encoding.encode(string))\r\n",
+					"    return num_tokens"
+				],
+				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"num_tokens_from_string(\"tiktoken está genial!\", \"cl100k_base\")"
+				],
+				"execution_count": 6
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"encoding.decode([83, 1609, 5963, 15833, 4173, 532, 0])"
+				],
+				"execution_count": 7
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"[encoding.decode_single_token_bytes(token) for token in [83, 1609, 5963, 15833, 4173, 532, 0]]"
+				],
+				"execution_count": 8
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def compare_encodings(example_string: str) -> None:\r\n",
+					"    \"\"\"Prints a comparison of three string encodings.\"\"\"\r\n",
+					"    # print the example string\r\n",
+					"    print(f'\\nExample string: \"{example_string}\"')\r\n",
+					"    # for each encoding, print the # of tokens, the token integers, and the token bytes\r\n",
+					"    for encoding_name in [\"gpt2\", \"p50k_base\", \"cl100k_base\"]:\r\n",
+					"        encoding = tiktoken.get_encoding(encoding_name)\r\n",
+					"        token_integers = encoding.encode(example_string)\r\n",
+					"        num_tokens = len(token_integers)\r\n",
+					"        token_bytes = [encoding.decode_single_token_bytes(token) for token in token_integers]\r\n",
+					"        print()\r\n",
+					"        print(f\"{encoding_name}: {num_tokens} tokens\")\r\n",
+					"        print(f\"token integers: {token_integers}\")\r\n",
+					"        print(f\"token bytes: {token_bytes}\")"
+				],
+				"execution_count": 9
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"compare_encodings(\"desoxirribonucleiuco\")"
+				],
+				"execution_count": 10
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#Contar tokens para las llamadas al API de Chat\r\n",
+					"def num_tokens_from_messages(messages, model=\"gpt-3.5-turbo-0301\"):\r\n",
+					"    \"\"\"Returns the number of tokens used by a list of messages.\"\"\"\r\n",
+					"    try:\r\n",
+					"        encoding = tiktoken.encoding_for_model(model)\r\n",
+					"    except KeyError:\r\n",
+					"        encoding = tiktoken.get_encoding(\"cl100k_base\")\r\n",
+					"    if model == \"gpt-3.5-turbo-0301\":  # note: future models may deviate from this\r\n",
+					"        num_tokens = 0\r\n",
+					"        for message in messages:\r\n",
+					"            num_tokens += 4  # every message follows <im_start>{role/name}\\n{content}<im_end>\\n\r\n",
+					"            for key, value in message.items():\r\n",
+					"                num_tokens += len(encoding.encode(value))\r\n",
+					"                if key == \"name\":  # if there's a name, the role is omitted\r\n",
+					"                    num_tokens += -1  # role is always required and always 1 token\r\n",
+					"        num_tokens += 2  # every reply is primed with <im_start>assistant\r\n",
+					"        return num_tokens\r\n",
+					"    else:\r\n",
+					"        raise NotImplementedError(f\"\"\"num_tokens_from_messages() is not presently implemented for model {model}.\r\n",
+					"See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens.\"\"\")"
+				],
+				"execution_count": 11
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"messages = [\r\n",
+					"    {\"role\": \"system\", \"content\": \"You are a helpful, pattern-following assistant that translates corporate jargon into plain English.\"},\r\n",
+					"    {\"role\": \"system\", \"name\":\"example_user\", \"content\": \"New synergies will help drive top-line growth.\"},\r\n",
+					"    {\"role\": \"system\", \"name\": \"example_assistant\", \"content\": \"Things working well together will increase revenue.\"},\r\n",
+					"    {\"role\": \"system\", \"name\":\"example_user\", \"content\": \"Let's circle back when we have more bandwidth to touch base on opportunities for increased leverage.\"},\r\n",
+					"    {\"role\": \"system\", \"name\": \"example_assistant\", \"content\": \"Let's talk later when we're less busy about how to do better.\"},\r\n",
+					"    {\"role\": \"user\", \"content\": \"This late pivot means we don't have time to boil the ocean for the client deliverable.\"},\r\n",
+					"]"
+				],
+				"execution_count": 12
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# example token count from the function defined above\r\n",
+					"model = \"gpt-3.5-turbo-0301\"\r\n",
+					"\r\n",
+					"print(f\"{num_tokens_from_messages(messages, model)} prompt tokens counted.\")"
+				],
+				"execution_count": 13
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"!pip install openai"
+				],
+				"execution_count": 14
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# example token count from the OpenAI API\r\n",
+					"import openai\r\n",
+					"\r\n",
+					"openai.api_key = \"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\"\r\n",
+					"\r\n",
+					"response = openai.ChatCompletion.create(\r\n",
+					"    model=model,\r\n",
+					"    messages=messages,\r\n",
+					"    temperature=0,\r\n",
+					")\r\n",
+					"\r\n",
+					"print(f'{response[\"usage\"][\"prompt_tokens\"]} prompt tokens used.')"
+				],
+				"execution_count": 15
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"openai.Model.list()"
+				],
+				"execution_count": 16
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#https://platform.openai.com/overview\r\n",
+					"\r\n",
+					"import openai\r\n",
+					"import time\r\n",
+					"openai.api_key = \"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\"\r\n",
+					"\r\n",
+					"completion = openai.Completion.create(engine=\"davinci\", prompt=\"This hotel was terrible.\",max_tokens=120)\r\n",
+					"print(completion.choices[0]['text'])"
+				],
+				"execution_count": 17
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"response = openai.Completion.create(\r\n",
+					"  model=\"text-davinci-003\",\r\n",
+					"  prompt=\"Classify the sentiment in these tweets:\\n\\n1. \\\"I can't stand homework\\\"\\n2. \\\"This sucks. I'm bored 😠\\\"\\n3. \\\"I can't wait for Halloween!!!\\\"\\n4. \\\"My cat is adorable ❤️❤️\\\"\\n5. \\\"I hate chocolate\\\"\\n\\nTweet sentiment ratings:\",\r\n",
+					"  temperature=0,\r\n",
+					"  max_tokens=60,\r\n",
+					"  top_p=1.0,\r\n",
+					"  frequency_penalty=0.0,\r\n",
+					"  presence_penalty=0.0\r\n",
+					")"
+				],
+				"execution_count": 18
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"response"
+				],
+				"execution_count": 19
+			}
+		]
+	}
+}
