@@ -20,7 +20,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "91cc2f48-7822-4df1-b316-f531c2733a7a"
+				"spark.autotune.trackingId": "fd85d918-8628-4d15-b66c-d0382d71b422"
 			}
 		},
 		"metadata": {
@@ -51,6 +51,19 @@
 			"sessionKeepAliveTimeout": 30
 		},
 		"cells": [
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"![Verne](https://www.vernegroup.com/wp-content/uploads/2021/08/Image-1-1-1.png)"
+				]
+			},
 			{
 				"cell_type": "code",
 				"metadata": {
