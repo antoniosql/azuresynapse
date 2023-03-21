@@ -1,5 +1,5 @@
 {
-	"name": "intro-openai-contar tokens",
+	"name": "openai-intro-contar tokens",
 	"properties": {
 		"description": "https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb",
 		"nbformat": 4,
@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "5da58fce-e60c-4fa4-86fb-549ed6ee4302"
+				"spark.autotune.trackingId": "cba123be-1315-4ad0-ac2b-362b2f9cb8dc"
 			}
 		},
 		"metadata": {

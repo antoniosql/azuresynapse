@@ -1,5 +1,5 @@
 {
-	"name": "intro-cognitive-search",
+	"name": "azure-cognitive-search-intro",
 	"properties": {
 		"nbformat": 4,
 		"nbformat_minor": 2,
@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "770520c8-e9f1-41b6-affe-1542f930da29"
+				"spark.autotune.trackingId": "2a2f5e2f-ef4f-4d90-9e53-093c209cbecf"
 			}
 		},
 		"metadata": {

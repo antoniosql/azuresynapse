@@ -1,5 +1,5 @@
 {
-	"name": "arte-azure-cognitive",
+	"name": "azure-cognitive-arte",
 	"properties": {
 		"description": "https://learn.microsoft.com/es-es/azure/cognitive-services/big-data/recipes/art-explorer ",
 		"nbformat": 4,
@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "42f5aaab-efc6-48a7-bae6-dd82a046fef4"
+				"spark.autotune.trackingId": "7b39ad53-e68c-4eac-bcb7-accab0a454d8"
 			}
 		},
 		"metadata": {
