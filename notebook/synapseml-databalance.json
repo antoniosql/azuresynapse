@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "9c722109-2c25-4060-857a-a8293604183e"
+				"spark.autotune.trackingId": "b15fe4d0-8de8-47d8-94ef-230bcdb8f3b5"
 			}
 		},
 		"metadata": {
@@ -331,6 +331,200 @@
 					"\r\n",
 					"- Cuando es positivo, significa que la Clase A ve el resultado positivo más que la Clase B.\r\n",
 					"- Cuando es negativo, significa que ClassB ve el resultado positivo más que ClassA."
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"## Distribution Balance Measures\r\n",
+					"Las medidas de equilibrio de distribución nos permiten comparar nuestros datos con una distribución de referencia (por ejemplo, distribución uniforme). Se calculan por columna sensible y no usan la columna de etiqueta\r\n",
+					""
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"collapsed": false
+				},
+				"source": [
+					"from synapse.ml.exploratory import DistributionBalanceMeasure\r\n",
+					"\r\n",
+					"distribution_balance_measures = (\r\n",
+					"    DistributionBalanceMeasure().setSensitiveCols(cols_of_interest).transform(df)\r\n",
+					")\r\n",
+					"\r\n",
+					"# Sort by JS Distance descending\r\n",
+					"display(\r\n",
+					"    distribution_balance_measures.sort(\r\n",
+					"        F.abs(\"DistributionBalanceMeasure.js_dist\").desc()\r\n",
+					"    )\r\n",
+					")"
+				],
+				"execution_count": 50
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"distribution_rows = distribution_balance_measures.collect()\r\n",
+					"race_row = [row for row in distribution_rows if row[\"FeatureName\"] == \"race\"][0][\r\n",
+					"    \"DistributionBalanceMeasure\"\r\n",
+					"]\r\n",
+					"sex_row = [row for row in distribution_rows if row[\"FeatureName\"] == \"sex\"][0][\r\n",
+					"    \"DistributionBalanceMeasure\"\r\n",
+					"]\r\n",
+					"\r\n",
+					"measures_of_interest = [\r\n",
+					"    \"kl_divergence\",\r\n",
+					"    \"js_dist\",\r\n",
+					"    \"inf_norm_dist\",\r\n",
+					"    \"total_variation_dist\",\r\n",
+					"    \"wasserstein_dist\",\r\n",
+					"]\r\n",
+					"race_measures = [round(race_row[measure], 4) for measure in measures_of_interest]\r\n",
+					"sex_measures = [round(sex_row[measure], 4) for measure in measures_of_interest]\r\n",
+					"\r\n",
+					"x = np.arange(len(measures_of_interest))\r\n",
+					"width = 0.35\r\n",
+					"\r\n",
+					"fig, ax = plt.subplots()\r\n",
+					"rects1 = ax.bar(x - width / 2, race_measures, width, label=\"Race\")\r\n",
+					"rects2 = ax.bar(x + width / 2, sex_measures, width, label=\"Sex\")\r\n",
+					"\r\n",
+					"ax.set_xlabel(\"Measure\")\r\n",
+					"ax.set_ylabel(\"Value\")\r\n",
+					"ax.set_title(\"Distribution Balance Measures of Sex and Race in Adult Dataset\")\r\n",
+					"ax.set_xticks(x)\r\n",
+					"ax.set_xticklabels(measures_of_interest)\r\n",
+					"ax.legend()\r\n",
+					"\r\n",
+					"plt.setp(ax.get_xticklabels(), rotation=20, ha=\"right\", rotation_mode=\"default\")\r\n",
+					"\r\n",
+					"\r\n",
+					"def autolabel(rects):\r\n",
+					"    for rect in rects:\r\n",
+					"        height = rect.get_height()\r\n",
+					"        ax.annotate(\r\n",
+					"            \"{}\".format(height),\r\n",
+					"            xy=(rect.get_x() + rect.get_width() / 2, height),\r\n",
+					"            xytext=(0, 1),  # 1 point vertical offset\r\n",
+					"            textcoords=\"offset points\",\r\n",
+					"            ha=\"center\",\r\n",
+					"            va=\"bottom\",\r\n",
+					"        )\r\n",
+					"\r\n",
+					"\r\n",
+					"autolabel(rects1)\r\n",
+					"autolabel(rects2)\r\n",
+					"\r\n",
+					"fig.tight_layout()\r\n",
+					"\r\n",
+					"plt.show()"
+				],
+				"execution_count": 51
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Race tiene una distancia JS de 0.5104, mientras que Sex tiene una distancia JS de 0.1217.\r\n",
+					"\r\n",
+					"Sabiendo que la distancia JS está entre [0, 1] donde 0 significa una distribución perfectamente equilibrada, podemos decir que:\r\n",
+					"\r\n",
+					"- Hay una mayor disparidad entre varias razas que entre varios sexos en nuestro conjunto de datos.\r\n",
+					"- La raza no está ni cerca de una distribución perfectamente equilibrada (es decir, algunas razas se ven MUCHO más que otras en nuestro conjunto de datos).\r\n",
+					"- El sexo está bastante cerca de una distribución perfectamente equilibrada."
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"## Aggregate Balance Measures\r\n",
+					"Las Medidas de Balance Agregado nos permiten obtener una mayor noción de desigualdad. Se calculan en el conjunto global de columnas sensibles y no usan la columna de etiqueta.\r\n",
+					"Estas medidas analizan la distribución de registros en todas las combinaciones de columnas sensibles. Por ejemplo, si Sexo y Raza son columnas sensibles, se intentará cuantificar el desequilibrio en todas las combinaciones: (Masculino, Negro), (Femenino, Blanco), (Masculino, Asiático-Pacific-Islander), etc.\r\n",
+					""
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"collapsed": false
+				},
+				"source": [
+					"from synapse.ml.exploratory import AggregateBalanceMeasure\r\n",
+					"\r\n",
+					"aggregate_balance_measures = (\r\n",
+					"    AggregateBalanceMeasure().setSensitiveCols(cols_of_interest).transform(df)\r\n",
+					")\r\n",
+					"\r\n",
+					"display(aggregate_balance_measures)"
+				],
+				"execution_count": 52
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Un índice Atkinson de 0.7779 nos permite saber que el 77.79% de los puntos de datos deben \"perderse\" para tener una participación más equitativa entre nuestras características.\r\n",
+					"\r\n",
+					"Nos permite saber que nuestro conjunto de datos se inclina hacia la máxima desigualdad, y debemos tomar medidas prácticas para:\r\n",
+					"\r\n",
+					"- Muestrear los puntos de datos donde apenas se observa el valor de la entidad.\r\n",
+					"- Reducir los puntos de datos de muestreo donde el valor de la entidad se observa mucho más que otros."
 				]
 			}
 		]
