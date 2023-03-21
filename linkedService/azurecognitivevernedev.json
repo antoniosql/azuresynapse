@@ -1,0 +1,27 @@
+{
+	"name": "azurecognitivevernedev",
+	"properties": {
+		"annotations": [],
+		"type": "CognitiveService",
+		"typeProperties": {
+			"subscriptionId": "c3846bb2-f0ac-4dba-a45a-bc4565b3af79",
+			"resourceGroup": "cognitive",
+			"csName": "cognitive-vernedev",
+			"csKind": "CognitiveServices",
+			"csLocation": "westeurope",
+			"endPoint": "https://cognitive-vernedev.cognitiveservices.azure.com/",
+			"csKey": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "akvvernedev",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "apikeycognitive"
+			}
+		},
+		"connectVia": {
+			"referenceName": "AutoResolveIntegrationRuntime",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
