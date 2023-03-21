@@ -1,5 +1,5 @@
 {
-	"name": "intro-synapseml",
+	"name": "synapseml-intro",
 	"properties": {
 		"nbformat": 4,
 		"nbformat_minor": 2,
@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "0b1521ea-a395-44b9-bf6b-4cd3473dc613"
+				"spark.autotune.trackingId": "1c1fbe7e-ab4b-4596-9e04-b80196fbf434"
 			}
 		},
 		"metadata": {
