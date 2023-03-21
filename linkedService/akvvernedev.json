@@ -1,0 +1,10 @@
+{
+	"name": "akvvernedev",
+	"properties": {
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://kvvernedev.vault.azure.net/"
+		}
+	}
+}
