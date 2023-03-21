@@ -23302,6 +23302,9 @@
 			"type": "Microsoft.Synapse/workspaces/notebooks",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
+				"folder": {
+					"name": "synapseml"
+				},
 				"nbformat": 4,
 				"nbformat_minor": 2,
 				"bigDataPool": {
@@ -23318,7 +23321,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "37157af9-cdb4-4e8b-8ae0-e2454451c50b"
+						"spark.autotune.trackingId": "2aa64db1-3765-4f7c-bccc-58bcad56aef7"
 					}
 				},
 				"metadata": {
@@ -23343,13 +23346,15 @@
 						"sparkVersion": "3.2",
 						"nodeCount": 3,
 						"cores": 4,
-						"memory": 28
+						"memory": 28,
+						"automaticScaleJobs": false
 					},
 					"sessionKeepAliveTimeout": 30
 				},
 				"cells": [
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"import synapse.ml\r\n",
 							"from synapse.ml.cognitive import *\r\n",
@@ -23431,487 +23436,13 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/synapseml-interpretability')]",
-			"type": "Microsoft.Synapse/workspaces/notebooks",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"description": "https://microsoft.github.io/SynapseML/docs/features/responsible_ai/Interpretability%20-%20Explanation%20Dashboard/",
-				"nbformat": 4,
-				"nbformat_minor": 2,
-				"bigDataPool": {
-					"referenceName": "synapsespark",
-					"type": "BigDataPoolReference"
-				},
-				"sessionProperties": {
-					"driverMemory": "28g",
-					"driverCores": 4,
-					"executorMemory": "28g",
-					"executorCores": 4,
-					"numExecutors": 2,
-					"conf": {
-						"spark.dynamicAllocation.enabled": "false",
-						"spark.dynamicAllocation.minExecutors": "2",
-						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "fdadb111-7613-4586-8e86-01ee4cde112b"
-					}
-				},
-				"metadata": {
-					"saveOutput": true,
-					"enableDebugMode": false,
-					"kernelspec": {
-						"name": "synapse_pyspark",
-						"display_name": "Synapse PySpark"
-					},
-					"language_info": {
-						"name": "python"
-					},
-					"a365ComputeOptions": {
-						"id": "/subscriptions/c3846bb2-f0ac-4dba-a45a-bc4565b3af79/resourceGroups/Synapse/providers/Microsoft.Synapse/workspaces/synapsevernedev/bigDataPools/synapsespark",
-						"name": "synapsespark",
-						"type": "Spark",
-						"endpoint": "https://synapsevernedev.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/synapsespark",
-						"auth": {
-							"type": "AAD",
-							"authResource": "https://dev.azuresynapse.net"
-						},
-						"sparkVersion": "3.2",
-						"nodeCount": 3,
-						"cores": 4,
-						"memory": 28
-					},
-					"sessionKeepAliveTimeout": 30
-				},
-				"cells": [
-					{
-						"cell_type": "code",
-						"source": [
-							"import pyspark\r\n",
-							"from IPython import get_ipython\r\n",
-							"from IPython.terminal.interactiveshell import TerminalInteractiveShell\r\n",
-							"from synapse.ml.explainers import *\r\n",
-							"from pyspark.ml import Pipeline\r\n",
-							"from pyspark.ml.classification import LogisticRegression\r\n",
-							"from pyspark.ml.feature import StringIndexer, OneHotEncoder, VectorAssembler\r\n",
-							"from pyspark.sql.types import *\r\n",
-							"from pyspark.sql.functions import *\r\n",
-							"import pandas as pd\r\n",
-							"from pyspark.sql import SparkSession\r\n",
-							"\r\n",
-							"# Bootstrap Spark Session\r\n",
-							"spark = SparkSession.builder.getOrCreate()\r\n",
-							"\r\n",
-							"from synapse.ml.core.platform import running_on_synapse\r\n",
-							"\r\n",
-							"#if running_on_synapse():\r\n",
-							" #   shell = TerminalInteractiveShell.instance()\r\n",
-							"  #  shell.define_macro(\"foo\", \"\"\"a,b=10,20\"\"\")\r\n",
-							"   # from notebookutils.visualization import display\r\n",
-							"\r\n",
-							""
-						],
-						"outputs": [],
-						"execution_count": 3
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"vec_access = udf(lambda v, i: float(v[i]), FloatType())\r\n",
-							"vec2array = udf(lambda vec: vec.toArray().tolist(), ArrayType(FloatType()))"
-						],
-						"outputs": [],
-						"execution_count": 4
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							},
-							"collapsed": false
-						},
-						"source": [
-							"df = spark.read.parquet(\r\n",
-							"    \"wasbs://publicwasb@mmlspark.blob.core.windows.net/AdultCensusIncome.parquet\"\r\n",
-							").cache()\r\n",
-							"\r\n",
-							"labelIndexer = StringIndexer(\r\n",
-							"    inputCol=\"income\", outputCol=\"label\", stringOrderType=\"alphabetAsc\"\r\n",
-							").fit(df)\r\n",
-							"print(\"Label index assigment: \" + str(set(zip(labelIndexer.labels, [0, 1]))))\r\n",
-							"\r\n",
-							"training = labelIndexer.transform(df)\r\n",
-							"display(training)\r\n",
-							"categorical_features = [\r\n",
-							"    \"workclass\",\r\n",
-							"    \"education\",\r\n",
-							"    \"marital-status\",\r\n",
-							"    \"occupation\",\r\n",
-							"    \"relationship\",\r\n",
-							"    \"race\",\r\n",
-							"    \"sex\",\r\n",
-							"    \"native-country\",\r\n",
-							"]\r\n",
-							"categorical_features_idx = [col + \"_idx\" for col in categorical_features]\r\n",
-							"categorical_features_enc = [col + \"_enc\" for col in categorical_features]\r\n",
-							"numeric_features = [\r\n",
-							"    \"age\",\r\n",
-							"    \"education-num\",\r\n",
-							"    \"capital-gain\",\r\n",
-							"    \"capital-loss\",\r\n",
-							"    \"hours-per-week\",\r\n",
-							"]\r\n",
-							"\r\n",
-							"strIndexer = StringIndexer(\r\n",
-							"    inputCols=categorical_features, outputCols=categorical_features_idx\r\n",
-							")\r\n",
-							"onehotEnc = OneHotEncoder(\r\n",
-							"    inputCols=categorical_features_idx, outputCols=categorical_features_enc\r\n",
-							")\r\n",
-							"vectAssem = VectorAssembler(\r\n",
-							"    inputCols=categorical_features_enc + numeric_features, outputCol=\"features\"\r\n",
-							")\r\n",
-							"lr = LogisticRegression(featuresCol=\"features\", labelCol=\"label\", weightCol=\"fnlwgt\")\r\n",
-							"pipeline = Pipeline(stages=[strIndexer, onehotEnc, vectAssem, lr])\r\n",
-							"model = pipeline.fit(training)"
-						],
-						"outputs": [],
-						"execution_count": 5
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							},
-							"collapsed": false
-						},
-						"source": [
-							"explain_instances = (\r\n",
-							"    model.transform(training).orderBy(rand()).limit(5).repartition(200).cache()\r\n",
-							")\r\n",
-							"display(explain_instances)"
-						],
-						"outputs": [],
-						"execution_count": 6
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"shap = TabularSHAP(\r\n",
-							"    inputCols=categorical_features + numeric_features,\r\n",
-							"    outputCol=\"shapValues\",\r\n",
-							"    numSamples=5000,\r\n",
-							"    model=model,\r\n",
-							"    targetCol=\"probability\",\r\n",
-							"    targetClasses=[1],\r\n",
-							"    backgroundData=broadcast(training.orderBy(rand()).limit(100).cache()),\r\n",
-							")\r\n",
-							"\r\n",
-							"shap_df = shap.transform(explain_instances)"
-						],
-						"outputs": [],
-						"execution_count": 7
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"shaps = (\r\n",
-							"    shap_df.withColumn(\"probability\", vec_access(col(\"probability\"), lit(1)))\r\n",
-							"    .withColumn(\"shapValues\", vec2array(col(\"shapValues\").getItem(0)))\r\n",
-							"    .select(\r\n",
-							"        [\"shapValues\", \"probability\", \"label\"] + categorical_features + numeric_features\r\n",
-							"    )\r\n",
-							")\r\n",
-							"\r\n",
-							"shaps_local = shaps.toPandas()\r\n",
-							"shaps_local.sort_values(\"probability\", ascending=False, inplace=True, ignore_index=True)\r\n",
-							"pd.set_option(\"display.max_colwidth\", None)\r\n",
-							"shaps_local"
-						],
-						"outputs": [],
-						"execution_count": 8
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"import pandas as pd\r\n",
-							"import numpy as np\r\n",
-							"\r\n",
-							"features = categorical_features + numeric_features\r\n",
-							"features_with_base = [\"Base\"] + features\r\n",
-							"\r\n",
-							"rows = shaps_local.shape[0]\r\n",
-							"\r\n",
-							"local_importance_values = shaps_local[[\"shapValues\"]]\r\n",
-							"eval_data = shaps_local[features]\r\n",
-							"true_y = np.array(shaps_local[[\"label\"]])"
-						],
-						"outputs": [],
-						"execution_count": 9
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"list_local_importance_values = local_importance_values.values.tolist()\r\n",
-							"converted_importance_values = []\r\n",
-							"bias = []\r\n",
-							"for classarray in list_local_importance_values:\r\n",
-							"    for rowarray in classarray:\r\n",
-							"        converted_list = rowarray.tolist()\r\n",
-							"        bias.append(converted_list[0])\r\n",
-							"        # remove the bias from local importance values\r\n",
-							"        del converted_list[0]\r\n",
-							"        converted_importance_values.append(converted_list)"
-						],
-						"outputs": [],
-						"execution_count": 10
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"!pip install --upgrade raiwidgets\r\n",
-							"!pip install itsdangerous==2.0.1"
-						],
-						"outputs": [],
-						"execution_count": 11
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"!pip install --upgrade interpret-community"
-						],
-						"outputs": [],
-						"execution_count": 12
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"from interpret_community.adapter import ExplanationAdapter\r\n",
-							"\r\n",
-							"adapter = ExplanationAdapter(features, classification=True)\r\n",
-							"global_explanation = adapter.create_global(\r\n",
-							"    converted_importance_values, eval_data, expected_values=bias\r\n",
-							")"
-						],
-						"outputs": [],
-						"execution_count": 13
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"# view the global importance values\r\n",
-							"global_explanation.global_importance_values"
-						],
-						"outputs": [],
-						"execution_count": 14
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"# view the local importance values\r\n",
-							"global_explanation.local_importance_values"
-						],
-						"outputs": [],
-						"execution_count": 15
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"class wrapper(object):\r\n",
-							"    def __init__(self, model):\r\n",
-							"        self.model = model\r\n",
-							"\r\n",
-							"    def predict(self, data):\r\n",
-							"        sparkdata = spark.createDataFrame(data)\r\n",
-							"        return (\r\n",
-							"            model.transform(sparkdata)\r\n",
-							"            .select(\"prediction\")\r\n",
-							"            .toPandas()\r\n",
-							"            .values.flatten()\r\n",
-							"            .tolist()\r\n",
-							"        )\r\n",
-							"\r\n",
-							"    def predict_proba(self, data):\r\n",
-							"        sparkdata = spark.createDataFrame(data)\r\n",
-							"        prediction = (\r\n",
-							"            model.transform(sparkdata)\r\n",
-							"            .select(\"probability\")\r\n",
-							"            .toPandas()\r\n",
-							"            .values.flatten()\r\n",
-							"            .tolist()\r\n",
-							"        )\r\n",
-							"        proba_list = [vector.values.tolist() for vector in prediction]\r\n",
-							"        return proba_list"
-						],
-						"outputs": [],
-						"execution_count": 16
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"# view the explanation in the ExplanationDashboard\r\n",
-							"from raiwidgets import ExplanationDashboard\r\n",
-							"\r\n",
-							"ExplanationDashboard(\r\n",
-							"    global_explanation, wrapper(model), dataset=eval_data, true_y=true_y\r\n",
-							")"
-						],
-						"outputs": [],
-						"execution_count": 17
-					}
-				]
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('workspaceName'), '/synapseml-intro')]",
 			"type": "Microsoft.Synapse/workspaces/notebooks",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
+				"folder": {
+					"name": "synapseml"
+				},
 				"nbformat": 4,
 				"nbformat_minor": 2,
 				"bigDataPool": {
@@ -23928,7 +23459,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "0fb6f669-4cd3-4524-b97c-dc7ca6ed466a"
+						"spark.autotune.trackingId": "6e337cd8-8842-4837-a881-39580eb46bad"
 					}
 				},
 				"metadata": {
@@ -24099,6 +23630,9 @@
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"description": "https://microsoft.github.io/SynapseML/docs/features/lightgbm/LightGBM%20-%20Overview/",
+				"folder": {
+					"name": "synapseml"
+				},
 				"nbformat": 4,
 				"nbformat_minor": 2,
 				"bigDataPool": {
@@ -24447,6 +23981,9 @@
 			"type": "Microsoft.Synapse/workspaces/notebooks",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
+				"folder": {
+					"name": "synapseml"
+				},
 				"nbformat": 4,
 				"nbformat_minor": 2,
 				"bigDataPool": {
@@ -24463,7 +24000,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "57b84151-e9a7-4a61-ab81-7d444c3cec79"
+						"spark.autotune.trackingId": "b20a87ec-b4ac-4ca1-a7b5-05a265aa556b"
 					}
 				},
 				"metadata": {
@@ -24488,7 +24025,8 @@
 						"sparkVersion": "3.2",
 						"nodeCount": 3,
 						"cores": 4,
-						"memory": 28
+						"memory": 28,
+						"automaticScaleJobs": false
 					},
 					"sessionKeepAliveTimeout": 30
 				},
@@ -24964,8 +24502,15 @@
 			"type": "Microsoft.Synapse/workspaces/notebooks",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
+				"folder": {
+					"name": "synapseml"
+				},
 				"nbformat": 4,
 				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "synapsespark",
+					"type": "BigDataPoolReference"
+				},
 				"sessionProperties": {
 					"driverMemory": "28g",
 					"driverCores": 4,
@@ -24976,7 +24521,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "51e64a51-3477-4362-bb83-be614e21e8a8"
+						"spark.autotune.trackingId": "bf89f8e2-a15b-45d4-bf37-d93dd02b797f"
 					}
 				},
 				"metadata": {
@@ -24984,22 +24529,538 @@
 					"enableDebugMode": false,
 					"kernelspec": {
 						"name": "synapse_pyspark",
-						"display_name": "python"
+						"display_name": "Synapse PySpark"
 					},
 					"language_info": {
 						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/c3846bb2-f0ac-4dba-a45a-bc4565b3af79/resourceGroups/Synapse/providers/Microsoft.Synapse/workspaces/synapsevernedev/bigDataPools/synapsespark",
+						"name": "synapsespark",
+						"type": "Spark",
+						"endpoint": "https://synapsevernedev.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/synapsespark",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "3.2",
+						"nodeCount": 3,
+						"cores": 4,
+						"memory": 28,
+						"automaticScaleJobs": false
 					},
 					"sessionKeepAliveTimeout": 30
 				},
 				"cells": [
 					{
-						"cell_type": "code",
-						"metadata": {},
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
 						"source": [
-							""
+							"![Verne](https://www.vernegroup.com/wp-content/uploads/2021/08/Image-1-1-1.png)"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"outputs_hidden": true
+							}
+						},
+						"source": [
+							"import matplotlib\r\n",
+							"import matplotlib.pyplot as plt\r\n",
+							"import numpy as np\r\n",
+							"import pyspark.sql.functions as F\r\n",
+							"from pyspark.sql import SparkSession\r\n",
+							"\r\n",
+							"# Bootstrap Spark Session\r\n",
+							"spark = SparkSession.builder.getOrCreate()\r\n",
+							"\r\n",
+							"from synapse.ml.core.platform import *\r\n",
+							"\r\n",
+							"#from synapse.ml.core.platform import materializing_display as display"
 						],
 						"outputs": [],
-						"execution_count": null
+						"execution_count": 40
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"collapsed": false
+						},
+						"source": [
+							"df = spark.read.parquet(\r\n",
+							"    \"wasbs://publicwasb@mmlspark.blob.core.windows.net/AdultCensusIncome.parquet\"\r\n",
+							")\r\n",
+							"display(df)"
+						],
+						"outputs": [],
+						"execution_count": 41
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Convert the \"income\" column from {<=50K, >50K} to {0, 1} to represent our binary classification label column\r\n",
+							"label_col = \"income\"\r\n",
+							"df = df.withColumn(\r\n",
+							"    label_col, F.when(F.col(label_col).contains(\"<=50K\"), F.lit(0)).otherwise(F.lit(1))\r\n",
+							")"
+						],
+						"outputs": [],
+						"execution_count": 42
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"collapsed": false
+						},
+						"source": [
+							"display(df.groupBy(\"race\").count())"
+						],
+						"outputs": [],
+						"execution_count": 43
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"collapsed": false
+						},
+						"source": [
+							"display(df.groupBy(\"sex\").count())"
+						],
+						"outputs": [],
+						"execution_count": 44
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"collapsed": false
+						},
+						"source": [
+							"# Choose columns/features to do data balance analysis on\r\n",
+							"cols_of_interest = [\"race\", \"sex\"]\r\n",
+							"display(df.select(cols_of_interest + [label_col]))"
+						],
+						"outputs": [],
+						"execution_count": 45
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"## Feature Balance Measure\r\n",
+							"nos permiten ver si cada combinación de características sensibles está recibiendo el resultado positivo (predicción verdadera) en tasas iguales.\r\n",
+							"En este contexto, definimos una medida de equilibrio de características, también conocida como paridad, para la etiqueta y como la diferencia absoluta entre las métricas de asociación de dos clases sensibles diferentes [xA,xB] con respecto a la métrica de asociación A(xi,y)"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"collapsed": false
+						},
+						"source": [
+							"from synapse.ml.exploratory import FeatureBalanceMeasure\r\n",
+							"\r\n",
+							"feature_balance_measures = (\r\n",
+							"    FeatureBalanceMeasure()\r\n",
+							"    .setSensitiveCols(cols_of_interest)\r\n",
+							"    .setLabelCol(label_col)\r\n",
+							"    .setVerbose(True)\r\n",
+							"    .transform(df)\r\n",
+							")\r\n",
+							"\r\n",
+							"# Sort by Statistical Parity descending for all features\r\n",
+							"display(feature_balance_measures.sort(F.abs(\"FeatureBalanceMeasure.dp\").desc()))"
+						],
+						"outputs": [],
+						"execution_count": 46
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"collapsed": false
+						},
+						"source": [
+							"# Drill down to feature == \"sex\"\r\n",
+							"display(\r\n",
+							"    feature_balance_measures.filter(F.col(\"FeatureName\") == \"sex\").sort(\r\n",
+							"        F.abs(\"FeatureBalanceMeasure.dp\").desc()\r\n",
+							"    )\r\n",
+							")"
+						],
+						"outputs": [],
+						"execution_count": 47
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"collapsed": false
+						},
+						"source": [
+							"# Drill down to feature == \"race\"\r\n",
+							"display(\r\n",
+							"    feature_balance_measures.filter(F.col(\"FeatureName\") == \"race\").sort(\r\n",
+							"        F.abs(\"FeatureBalanceMeasure.dp\").desc()\r\n",
+							"    )\r\n",
+							")"
+						],
+						"outputs": [],
+						"execution_count": 48
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"races = [row[\"race\"] for row in df.groupBy(\"race\").count().select(\"race\").collect()]\r\n",
+							"dp_rows = (\r\n",
+							"    feature_balance_measures.filter(F.col(\"FeatureName\") == \"race\")\r\n",
+							"    .select(\"ClassA\", \"ClassB\", \"FeatureBalanceMeasure.dp\")\r\n",
+							"    .collect()\r\n",
+							")\r\n",
+							"race_dp_values = [(row[\"ClassA\"], row[\"ClassB\"], row[\"dp\"]) for row in dp_rows]\r\n",
+							"\r\n",
+							"race_dp_array = np.zeros((len(races), len(races)))\r\n",
+							"for class_a, class_b, dp_value in race_dp_values:\r\n",
+							"    i, j = races.index(class_a), races.index(class_b)\r\n",
+							"    dp_value = round(dp_value, 2)\r\n",
+							"    race_dp_array[i, j] = dp_value\r\n",
+							"    race_dp_array[j, i] = -1 * dp_value\r\n",
+							"\r\n",
+							"colormap = \"RdBu\"\r\n",
+							"dp_min, dp_max = -1.0, 1.0\r\n",
+							"\r\n",
+							"fig, ax = plt.subplots()\r\n",
+							"im = ax.imshow(race_dp_array, vmin=dp_min, vmax=dp_max, cmap=colormap)\r\n",
+							"\r\n",
+							"cbar = ax.figure.colorbar(im, ax=ax)\r\n",
+							"cbar.ax.set_ylabel(\"Statistical Parity\", rotation=-90, va=\"bottom\")\r\n",
+							"\r\n",
+							"ax.set_xticks(np.arange(len(races)))\r\n",
+							"ax.set_yticks(np.arange(len(races)))\r\n",
+							"ax.set_xticklabels(races)\r\n",
+							"ax.set_yticklabels(races)\r\n",
+							"\r\n",
+							"plt.setp(ax.get_xticklabels(), rotation=45, ha=\"right\", rotation_mode=\"anchor\")\r\n",
+							"\r\n",
+							"for i in range(len(races)):\r\n",
+							"    for j in range(len(races)):\r\n",
+							"        text = ax.text(j, i, race_dp_array[i, j], ha=\"center\", va=\"center\", color=\"k\")\r\n",
+							"\r\n",
+							"ax.set_title(\"Statistical Parity of Races in Adult Dataset\")\r\n",
+							"fig.tight_layout()\r\n",
+							"plt.show()"
+						],
+						"outputs": [],
+						"execution_count": 49
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"Paridad estadística:\r\n",
+							"\r\n",
+							"- Cuando es positivo, significa que la Clase A ve el resultado positivo más que la Clase B.\r\n",
+							"- Cuando es negativo, significa que ClassB ve el resultado positivo más que ClassA."
+						]
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"## Distribution Balance Measures\r\n",
+							"Las medidas de equilibrio de distribución nos permiten comparar nuestros datos con una distribución de referencia (por ejemplo, distribución uniforme). Se calculan por columna sensible y no usan la columna de etiqueta\r\n",
+							""
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"collapsed": false
+						},
+						"source": [
+							"from synapse.ml.exploratory import DistributionBalanceMeasure\r\n",
+							"\r\n",
+							"distribution_balance_measures = (\r\n",
+							"    DistributionBalanceMeasure().setSensitiveCols(cols_of_interest).transform(df)\r\n",
+							")\r\n",
+							"\r\n",
+							"# Sort by JS Distance descending\r\n",
+							"display(\r\n",
+							"    distribution_balance_measures.sort(\r\n",
+							"        F.abs(\"DistributionBalanceMeasure.js_dist\").desc()\r\n",
+							"    )\r\n",
+							")"
+						],
+						"outputs": [],
+						"execution_count": 50
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"distribution_rows = distribution_balance_measures.collect()\r\n",
+							"race_row = [row for row in distribution_rows if row[\"FeatureName\"] == \"race\"][0][\r\n",
+							"    \"DistributionBalanceMeasure\"\r\n",
+							"]\r\n",
+							"sex_row = [row for row in distribution_rows if row[\"FeatureName\"] == \"sex\"][0][\r\n",
+							"    \"DistributionBalanceMeasure\"\r\n",
+							"]\r\n",
+							"\r\n",
+							"measures_of_interest = [\r\n",
+							"    \"kl_divergence\",\r\n",
+							"    \"js_dist\",\r\n",
+							"    \"inf_norm_dist\",\r\n",
+							"    \"total_variation_dist\",\r\n",
+							"    \"wasserstein_dist\",\r\n",
+							"]\r\n",
+							"race_measures = [round(race_row[measure], 4) for measure in measures_of_interest]\r\n",
+							"sex_measures = [round(sex_row[measure], 4) for measure in measures_of_interest]\r\n",
+							"\r\n",
+							"x = np.arange(len(measures_of_interest))\r\n",
+							"width = 0.35\r\n",
+							"\r\n",
+							"fig, ax = plt.subplots()\r\n",
+							"rects1 = ax.bar(x - width / 2, race_measures, width, label=\"Race\")\r\n",
+							"rects2 = ax.bar(x + width / 2, sex_measures, width, label=\"Sex\")\r\n",
+							"\r\n",
+							"ax.set_xlabel(\"Measure\")\r\n",
+							"ax.set_ylabel(\"Value\")\r\n",
+							"ax.set_title(\"Distribution Balance Measures of Sex and Race in Adult Dataset\")\r\n",
+							"ax.set_xticks(x)\r\n",
+							"ax.set_xticklabels(measures_of_interest)\r\n",
+							"ax.legend()\r\n",
+							"\r\n",
+							"plt.setp(ax.get_xticklabels(), rotation=20, ha=\"right\", rotation_mode=\"default\")\r\n",
+							"\r\n",
+							"\r\n",
+							"def autolabel(rects):\r\n",
+							"    for rect in rects:\r\n",
+							"        height = rect.get_height()\r\n",
+							"        ax.annotate(\r\n",
+							"            \"{}\".format(height),\r\n",
+							"            xy=(rect.get_x() + rect.get_width() / 2, height),\r\n",
+							"            xytext=(0, 1),  # 1 point vertical offset\r\n",
+							"            textcoords=\"offset points\",\r\n",
+							"            ha=\"center\",\r\n",
+							"            va=\"bottom\",\r\n",
+							"        )\r\n",
+							"\r\n",
+							"\r\n",
+							"autolabel(rects1)\r\n",
+							"autolabel(rects2)\r\n",
+							"\r\n",
+							"fig.tight_layout()\r\n",
+							"\r\n",
+							"plt.show()"
+						],
+						"outputs": [],
+						"execution_count": 51
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"Race tiene una distancia JS de 0.5104, mientras que Sex tiene una distancia JS de 0.1217.\r\n",
+							"\r\n",
+							"Sabiendo que la distancia JS está entre [0, 1] donde 0 significa una distribución perfectamente equilibrada, podemos decir que:\r\n",
+							"\r\n",
+							"- Hay una mayor disparidad entre varias razas que entre varios sexos en nuestro conjunto de datos.\r\n",
+							"- La raza no está ni cerca de una distribución perfectamente equilibrada (es decir, algunas razas se ven MUCHO más que otras en nuestro conjunto de datos).\r\n",
+							"- El sexo está bastante cerca de una distribución perfectamente equilibrada."
+						]
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"## Aggregate Balance Measures\r\n",
+							"Las Medidas de Balance Agregado nos permiten obtener una mayor noción de desigualdad. Se calculan en el conjunto global de columnas sensibles y no usan la columna de etiqueta.\r\n",
+							"Estas medidas analizan la distribución de registros en todas las combinaciones de columnas sensibles. Por ejemplo, si Sexo y Raza son columnas sensibles, se intentará cuantificar el desequilibrio en todas las combinaciones: (Masculino, Negro), (Femenino, Blanco), (Masculino, Asiático-Pacific-Islander), etc.\r\n",
+							""
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"collapsed": false
+						},
+						"source": [
+							"from synapse.ml.exploratory import AggregateBalanceMeasure\r\n",
+							"\r\n",
+							"aggregate_balance_measures = (\r\n",
+							"    AggregateBalanceMeasure().setSensitiveCols(cols_of_interest).transform(df)\r\n",
+							")\r\n",
+							"\r\n",
+							"display(aggregate_balance_measures)"
+						],
+						"outputs": [],
+						"execution_count": 52
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"Un índice Atkinson de 0.7779 nos permite saber que el 77.79% de los puntos de datos deben \"perderse\" para tener una participación más equitativa entre nuestras características.\r\n",
+							"\r\n",
+							"Nos permite saber que nuestro conjunto de datos se inclina hacia la máxima desigualdad, y debemos tomar medidas prácticas para:\r\n",
+							"\r\n",
+							"- Muestrear los puntos de datos donde apenas se observa el valor de la entidad.\r\n",
+							"- Reducir los puntos de datos de muestreo donde el valor de la entidad se observa mucho más que otros."
+						]
 					}
 				]
 			},
