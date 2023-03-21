@@ -1,0 +1,338 @@
+{
+	"name": "synapseml-databalance",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "synapsespark",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "9c722109-2c25-4060-857a-a8293604183e"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/c3846bb2-f0ac-4dba-a45a-bc4565b3af79/resourceGroups/Synapse/providers/Microsoft.Synapse/workspaces/synapsevernedev/bigDataPools/synapsespark",
+				"name": "synapsespark",
+				"type": "Spark",
+				"endpoint": "https://synapsevernedev.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/synapsespark",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.2",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"import matplotlib\r\n",
+					"import matplotlib.pyplot as plt\r\n",
+					"import numpy as np\r\n",
+					"import pyspark.sql.functions as F\r\n",
+					"from pyspark.sql import SparkSession\r\n",
+					"\r\n",
+					"# Bootstrap Spark Session\r\n",
+					"spark = SparkSession.builder.getOrCreate()\r\n",
+					"\r\n",
+					"from synapse.ml.core.platform import *\r\n",
+					"\r\n",
+					"#from synapse.ml.core.platform import materializing_display as display"
+				],
+				"execution_count": 40
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"collapsed": false
+				},
+				"source": [
+					"df = spark.read.parquet(\r\n",
+					"    \"wasbs://publicwasb@mmlspark.blob.core.windows.net/AdultCensusIncome.parquet\"\r\n",
+					")\r\n",
+					"display(df)"
+				],
+				"execution_count": 41
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Convert the \"income\" column from {<=50K, >50K} to {0, 1} to represent our binary classification label column\r\n",
+					"label_col = \"income\"\r\n",
+					"df = df.withColumn(\r\n",
+					"    label_col, F.when(F.col(label_col).contains(\"<=50K\"), F.lit(0)).otherwise(F.lit(1))\r\n",
+					")"
+				],
+				"execution_count": 42
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"collapsed": false
+				},
+				"source": [
+					"display(df.groupBy(\"race\").count())"
+				],
+				"execution_count": 43
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"collapsed": false
+				},
+				"source": [
+					"display(df.groupBy(\"sex\").count())"
+				],
+				"execution_count": 44
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"collapsed": false
+				},
+				"source": [
+					"# Choose columns/features to do data balance analysis on\r\n",
+					"cols_of_interest = [\"race\", \"sex\"]\r\n",
+					"display(df.select(cols_of_interest + [label_col]))"
+				],
+				"execution_count": 45
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"## Feature Balance Measure\r\n",
+					"nos permiten ver si cada combinación de características sensibles está recibiendo el resultado positivo (predicción verdadera) en tasas iguales.\r\n",
+					"En este contexto, definimos una medida de equilibrio de características, también conocida como paridad, para la etiqueta y como la diferencia absoluta entre las métricas de asociación de dos clases sensibles diferentes [xA,xB] con respecto a la métrica de asociación A(xi,y)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"collapsed": false
+				},
+				"source": [
+					"from synapse.ml.exploratory import FeatureBalanceMeasure\r\n",
+					"\r\n",
+					"feature_balance_measures = (\r\n",
+					"    FeatureBalanceMeasure()\r\n",
+					"    .setSensitiveCols(cols_of_interest)\r\n",
+					"    .setLabelCol(label_col)\r\n",
+					"    .setVerbose(True)\r\n",
+					"    .transform(df)\r\n",
+					")\r\n",
+					"\r\n",
+					"# Sort by Statistical Parity descending for all features\r\n",
+					"display(feature_balance_measures.sort(F.abs(\"FeatureBalanceMeasure.dp\").desc()))"
+				],
+				"execution_count": 46
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"collapsed": false
+				},
+				"source": [
+					"# Drill down to feature == \"sex\"\r\n",
+					"display(\r\n",
+					"    feature_balance_measures.filter(F.col(\"FeatureName\") == \"sex\").sort(\r\n",
+					"        F.abs(\"FeatureBalanceMeasure.dp\").desc()\r\n",
+					"    )\r\n",
+					")"
+				],
+				"execution_count": 47
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"collapsed": false
+				},
+				"source": [
+					"# Drill down to feature == \"race\"\r\n",
+					"display(\r\n",
+					"    feature_balance_measures.filter(F.col(\"FeatureName\") == \"race\").sort(\r\n",
+					"        F.abs(\"FeatureBalanceMeasure.dp\").desc()\r\n",
+					"    )\r\n",
+					")"
+				],
+				"execution_count": 48
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"races = [row[\"race\"] for row in df.groupBy(\"race\").count().select(\"race\").collect()]\r\n",
+					"dp_rows = (\r\n",
+					"    feature_balance_measures.filter(F.col(\"FeatureName\") == \"race\")\r\n",
+					"    .select(\"ClassA\", \"ClassB\", \"FeatureBalanceMeasure.dp\")\r\n",
+					"    .collect()\r\n",
+					")\r\n",
+					"race_dp_values = [(row[\"ClassA\"], row[\"ClassB\"], row[\"dp\"]) for row in dp_rows]\r\n",
+					"\r\n",
+					"race_dp_array = np.zeros((len(races), len(races)))\r\n",
+					"for class_a, class_b, dp_value in race_dp_values:\r\n",
+					"    i, j = races.index(class_a), races.index(class_b)\r\n",
+					"    dp_value = round(dp_value, 2)\r\n",
+					"    race_dp_array[i, j] = dp_value\r\n",
+					"    race_dp_array[j, i] = -1 * dp_value\r\n",
+					"\r\n",
+					"colormap = \"RdBu\"\r\n",
+					"dp_min, dp_max = -1.0, 1.0\r\n",
+					"\r\n",
+					"fig, ax = plt.subplots()\r\n",
+					"im = ax.imshow(race_dp_array, vmin=dp_min, vmax=dp_max, cmap=colormap)\r\n",
+					"\r\n",
+					"cbar = ax.figure.colorbar(im, ax=ax)\r\n",
+					"cbar.ax.set_ylabel(\"Statistical Parity\", rotation=-90, va=\"bottom\")\r\n",
+					"\r\n",
+					"ax.set_xticks(np.arange(len(races)))\r\n",
+					"ax.set_yticks(np.arange(len(races)))\r\n",
+					"ax.set_xticklabels(races)\r\n",
+					"ax.set_yticklabels(races)\r\n",
+					"\r\n",
+					"plt.setp(ax.get_xticklabels(), rotation=45, ha=\"right\", rotation_mode=\"anchor\")\r\n",
+					"\r\n",
+					"for i in range(len(races)):\r\n",
+					"    for j in range(len(races)):\r\n",
+					"        text = ax.text(j, i, race_dp_array[i, j], ha=\"center\", va=\"center\", color=\"k\")\r\n",
+					"\r\n",
+					"ax.set_title(\"Statistical Parity of Races in Adult Dataset\")\r\n",
+					"fig.tight_layout()\r\n",
+					"plt.show()"
+				],
+				"execution_count": 49
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Paridad estadística:\r\n",
+					"\r\n",
+					"- Cuando es positivo, significa que la Clase A ve el resultado positivo más que la Clase B.\r\n",
+					"- Cuando es negativo, significa que ClassB ve el resultado positivo más que ClassA."
+				]
+			}
+		]
+	}
+}
