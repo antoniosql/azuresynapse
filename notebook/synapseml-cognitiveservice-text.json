@@ -1,6 +1,9 @@
 {
 	"name": "synapseml-cognitiveservice-text",
 	"properties": {
+		"folder": {
+			"name": "synapseml"
+		},
 		"nbformat": 4,
 		"nbformat_minor": 2,
 		"bigDataPool": {
@@ -17,7 +20,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "37157af9-cdb4-4e8b-8ae0-e2454451c50b"
+				"spark.autotune.trackingId": "2aa64db1-3765-4f7c-bccc-58bcad56aef7"
 			}
 		},
 		"metadata": {

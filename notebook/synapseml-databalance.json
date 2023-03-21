@@ -1,6 +1,9 @@
 {
 	"name": "synapseml-databalance",
 	"properties": {
+		"folder": {
+			"name": "synapseml"
+		},
 		"nbformat": 4,
 		"nbformat_minor": 2,
 		"bigDataPool": {
@@ -17,7 +20,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "0a572b01-f497-47cd-a48d-736e38ca6f45"
+				"spark.autotune.trackingId": "91cc2f48-7822-4df1-b316-f531c2733a7a"
 			}
 		},
 		"metadata": {
