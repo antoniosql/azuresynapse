@@ -23265,7 +23265,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "c220cb38-8c29-46b1-a5ca-00983f5de55b"
+						"spark.autotune.trackingId": "16bcdcbc-7a72-43e2-9b75-0e5ba22fe9f2"
 					}
 				},
 				"metadata": {
@@ -23325,7 +23325,7 @@
 							""
 						],
 						"outputs": [],
-						"execution_count": 20
+						"execution_count": 3
 					},
 					{
 						"cell_type": "code",
@@ -23345,7 +23345,7 @@
 							"vec2array = udf(lambda vec: vec.toArray().tolist(), ArrayType(FloatType()))"
 						],
 						"outputs": [],
-						"execution_count": 26
+						"execution_count": 4
 					},
 					{
 						"cell_type": "code",
@@ -23407,7 +23407,7 @@
 							"model = pipeline.fit(training)"
 						],
 						"outputs": [],
-						"execution_count": 22
+						"execution_count": 5
 					},
 					{
 						"cell_type": "code",
@@ -23430,7 +23430,7 @@
 							"display(explain_instances)"
 						],
 						"outputs": [],
-						"execution_count": 23
+						"execution_count": 6
 					},
 					{
 						"cell_type": "code",
@@ -23459,7 +23459,7 @@
 							"shap_df = shap.transform(explain_instances)"
 						],
 						"outputs": [],
-						"execution_count": 24
+						"execution_count": 7
 					},
 					{
 						"cell_type": "code",
@@ -23489,7 +23489,7 @@
 							"shaps_local"
 						],
 						"outputs": [],
-						"execution_count": 27
+						"execution_count": 8
 					},
 					{
 						"cell_type": "code",
@@ -23518,7 +23518,7 @@
 							"true_y = np.array(shaps_local[[\"label\"]])"
 						],
 						"outputs": [],
-						"execution_count": 28
+						"execution_count": 9
 					},
 					{
 						"cell_type": "code",
@@ -23546,7 +23546,7 @@
 							"        converted_importance_values.append(converted_list)"
 						],
 						"outputs": [],
-						"execution_count": 29
+						"execution_count": 10
 					},
 					{
 						"cell_type": "code",
@@ -23566,7 +23566,7 @@
 							"!pip install itsdangerous==2.0.1"
 						],
 						"outputs": [],
-						"execution_count": 30
+						"execution_count": 11
 					},
 					{
 						"cell_type": "code",
@@ -23585,7 +23585,7 @@
 							"!pip install --upgrade interpret-community"
 						],
 						"outputs": [],
-						"execution_count": 31
+						"execution_count": 12
 					},
 					{
 						"cell_type": "code",
@@ -23609,7 +23609,7 @@
 							")"
 						],
 						"outputs": [],
-						"execution_count": 32
+						"execution_count": 13
 					},
 					{
 						"cell_type": "code",
@@ -23629,7 +23629,7 @@
 							"global_explanation.global_importance_values"
 						],
 						"outputs": [],
-						"execution_count": null
+						"execution_count": 14
 					},
 					{
 						"cell_type": "code",
@@ -23649,7 +23649,7 @@
 							"global_explanation.local_importance_values"
 						],
 						"outputs": [],
-						"execution_count": null
+						"execution_count": 15
 					},
 					{
 						"cell_type": "code",
@@ -23692,7 +23692,7 @@
 							"        return proba_list"
 						],
 						"outputs": [],
-						"execution_count": null
+						"execution_count": 16
 					},
 					{
 						"cell_type": "code",
@@ -23716,7 +23716,7 @@
 							")"
 						],
 						"outputs": [],
-						"execution_count": null
+						"execution_count": 17
 					}
 				]
 			},
