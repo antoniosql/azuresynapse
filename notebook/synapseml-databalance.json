@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "b15fe4d0-8de8-47d8-94ef-230bcdb8f3b5"
+				"spark.autotune.trackingId": "0a572b01-f497-47cd-a48d-736e38ca6f45"
 			}
 		},
 		"metadata": {
@@ -50,6 +50,11 @@
 		"cells": [
 			{
 				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"outputs_hidden": true
+					}
+				},
 				"source": [
 					"import matplotlib\r\n",
 					"import matplotlib.pyplot as plt\r\n",
