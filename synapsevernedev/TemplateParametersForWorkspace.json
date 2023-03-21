@@ -11,6 +11,12 @@
 		"synapsevernedev-WorkspaceDefaultSqlServer_connectionString": {
 			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:synapsevernedev.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
 		},
+		"akvvernedev_properties_typeProperties_baseUrl": {
+			"value": "https://kvvernedev.vault.azure.net/"
+		},
+		"azurecognitivevernedev_properties_typeProperties_subscriptionId": {
+			"value": "c3846bb2-f0ac-4dba-a45a-bc4565b3af79"
+		},
 		"city_safety_chicago_sasUri": {
 			"value": ""
 		},

@@ -16,6 +16,14 @@
 			"metadata": "Secure string for 'connectionString' of 'synapsevernedev-WorkspaceDefaultSqlServer'",
 			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:synapsevernedev.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
 		},
+		"akvvernedev_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://kvvernedev.vault.azure.net/"
+		},
+		"azurecognitivevernedev_properties_typeProperties_subscriptionId": {
+			"type": "string",
+			"defaultValue": "c3846bb2-f0ac-4dba-a45a-bc4565b3af79"
+		},
 		"city_safety_chicago_sasUri": {
 			"type": "secureString",
 			"metadata": "Secure string for 'sasUri' of 'city_safety_chicago'"
@@ -33,6 +41,52 @@
 		"workspaceId": "[concat('Microsoft.Synapse/workspaces/', parameters('workspaceName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('workspaceName'), '/akvvernedev')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "[parameters('akvvernedev_properties_typeProperties_baseUrl')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/azurecognitivevernedev')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "CognitiveService",
+				"typeProperties": {
+					"subscriptionId": "[parameters('azurecognitivevernedev_properties_typeProperties_subscriptionId')]",
+					"resourceGroup": "cognitive",
+					"csName": "cognitive-vernedev",
+					"csKind": "CognitiveServices",
+					"csLocation": "westeurope",
+					"endPoint": "https://cognitive-vernedev.cognitiveservices.azure.com/",
+					"csKey": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "akvvernedev",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "apikeycognitive"
+					}
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
+				"[concat(variables('workspaceId'), '/linkedServices/akvvernedev')]"
+			]
+		},
 		{
 			"name": "[concat(parameters('workspaceName'), '/city_safety_chicago')]",
 			"type": "Microsoft.Synapse/workspaces/linkedServices",
@@ -242,7 +296,7 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/arte-azure-cognitive')]",
+			"name": "[concat(parameters('workspaceName'), '/azure-cognitive-arte')]",
 			"type": "Microsoft.Synapse/workspaces/notebooks",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
@@ -263,7 +317,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "42f5aaab-efc6-48a7-bae6-dd82a046fef4"
+						"spark.autotune.trackingId": "7b39ad53-e68c-4eac-bcb7-accab0a454d8"
 					}
 				},
 				"metadata": {
@@ -492,7 +546,7 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/intro-cognitive-search')]",
+			"name": "[concat(parameters('workspaceName'), '/azure-cognitive-search-intro')]",
 			"type": "Microsoft.Synapse/workspaces/notebooks",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
@@ -512,7 +566,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "770520c8-e9f1-41b6-affe-1542f930da29"
+						"spark.autotune.trackingId": "500e04fe-867e-47a7-87b6-0f58ff7ed729"
 					}
 				},
 				"metadata": {
@@ -605,7 +659,7 @@
 							"from synapse.ml.core.platform import materializing_display as display"
 						],
 						"outputs": [],
-						"execution_count": null
+						"execution_count": 1
 					},
 					{
 						"cell_type": "code",
@@ -1111,487 +1165,6 @@
 						],
 						"outputs": [],
 						"execution_count": 20
-					}
-				]
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/intro-openai-contar tokens')]",
-			"type": "Microsoft.Synapse/workspaces/notebooks",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"description": "https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb",
-				"nbformat": 4,
-				"nbformat_minor": 2,
-				"bigDataPool": {
-					"referenceName": "synapsespark",
-					"type": "BigDataPoolReference"
-				},
-				"sessionProperties": {
-					"driverMemory": "28g",
-					"driverCores": 4,
-					"executorMemory": "28g",
-					"executorCores": 4,
-					"numExecutors": 2,
-					"conf": {
-						"spark.dynamicAllocation.enabled": "false",
-						"spark.dynamicAllocation.minExecutors": "2",
-						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "5da58fce-e60c-4fa4-86fb-549ed6ee4302"
-					}
-				},
-				"metadata": {
-					"saveOutput": true,
-					"enableDebugMode": false,
-					"kernelspec": {
-						"name": "synapse_pyspark",
-						"display_name": "Synapse PySpark"
-					},
-					"language_info": {
-						"name": "python"
-					},
-					"a365ComputeOptions": {
-						"id": "/subscriptions/c3846bb2-f0ac-4dba-a45a-bc4565b3af79/resourceGroups/Synapse/providers/Microsoft.Synapse/workspaces/synapsevernedev/bigDataPools/synapsespark",
-						"name": "synapsespark",
-						"type": "Spark",
-						"endpoint": "https://synapsevernedev.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/synapsespark",
-						"auth": {
-							"type": "AAD",
-							"authResource": "https://dev.azuresynapse.net"
-						},
-						"sparkVersion": "3.2",
-						"nodeCount": 3,
-						"cores": 4,
-						"memory": 28
-					},
-					"sessionKeepAliveTimeout": 30
-				},
-				"cells": [
-					{
-						"cell_type": "code",
-						"source": [
-							"!pip install tiktoken"
-						],
-						"outputs": [],
-						"execution_count": 1
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"import tiktoken"
-						],
-						"outputs": [],
-						"execution_count": 2
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"#Cargo un tokenizador concreto\r\n",
-							"encoding = tiktoken.get_encoding(\"cl100k_base\")\r\n",
-							"# o Cargo el tokenizador recomendado para un modelo\r\n",
-							"encoding = tiktoken.encoding_for_model(\"gpt-3.5-turbo\")"
-						],
-						"outputs": [],
-						"execution_count": 3
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"encoding.encode(\"tiktoken está genial!\")"
-						],
-						"outputs": [],
-						"execution_count": 4
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"def num_tokens_from_string(string: str, encoding_name: str) -> int:\r\n",
-							"    \"\"\"Returns the number of tokens in a text string.\"\"\"\r\n",
-							"    encoding = tiktoken.get_encoding(encoding_name)\r\n",
-							"    num_tokens = len(encoding.encode(string))\r\n",
-							"    return num_tokens"
-						],
-						"outputs": [],
-						"execution_count": 5
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"num_tokens_from_string(\"tiktoken está genial!\", \"cl100k_base\")"
-						],
-						"outputs": [],
-						"execution_count": 6
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"encoding.decode([83, 1609, 5963, 15833, 4173, 532, 0])"
-						],
-						"outputs": [],
-						"execution_count": 7
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"[encoding.decode_single_token_bytes(token) for token in [83, 1609, 5963, 15833, 4173, 532, 0]]"
-						],
-						"outputs": [],
-						"execution_count": 8
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"def compare_encodings(example_string: str) -> None:\r\n",
-							"    \"\"\"Prints a comparison of three string encodings.\"\"\"\r\n",
-							"    # print the example string\r\n",
-							"    print(f'\\nExample string: \"{example_string}\"')\r\n",
-							"    # for each encoding, print the # of tokens, the token integers, and the token bytes\r\n",
-							"    for encoding_name in [\"gpt2\", \"p50k_base\", \"cl100k_base\"]:\r\n",
-							"        encoding = tiktoken.get_encoding(encoding_name)\r\n",
-							"        token_integers = encoding.encode(example_string)\r\n",
-							"        num_tokens = len(token_integers)\r\n",
-							"        token_bytes = [encoding.decode_single_token_bytes(token) for token in token_integers]\r\n",
-							"        print()\r\n",
-							"        print(f\"{encoding_name}: {num_tokens} tokens\")\r\n",
-							"        print(f\"token integers: {token_integers}\")\r\n",
-							"        print(f\"token bytes: {token_bytes}\")"
-						],
-						"outputs": [],
-						"execution_count": 9
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"compare_encodings(\"desoxirribonucleiuco\")"
-						],
-						"outputs": [],
-						"execution_count": 10
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"#Contar tokens para las llamadas al API de Chat\r\n",
-							"def num_tokens_from_messages(messages, model=\"gpt-3.5-turbo-0301\"):\r\n",
-							"    \"\"\"Returns the number of tokens used by a list of messages.\"\"\"\r\n",
-							"    try:\r\n",
-							"        encoding = tiktoken.encoding_for_model(model)\r\n",
-							"    except KeyError:\r\n",
-							"        encoding = tiktoken.get_encoding(\"cl100k_base\")\r\n",
-							"    if model == \"gpt-3.5-turbo-0301\":  # note: future models may deviate from this\r\n",
-							"        num_tokens = 0\r\n",
-							"        for message in messages:\r\n",
-							"            num_tokens += 4  # every message follows <im_start>{role/name}\\n{content}<im_end>\\n\r\n",
-							"            for key, value in message.items():\r\n",
-							"                num_tokens += len(encoding.encode(value))\r\n",
-							"                if key == \"name\":  # if there's a name, the role is omitted\r\n",
-							"                    num_tokens += -1  # role is always required and always 1 token\r\n",
-							"        num_tokens += 2  # every reply is primed with <im_start>assistant\r\n",
-							"        return num_tokens\r\n",
-							"    else:\r\n",
-							"        raise NotImplementedError(f\"\"\"num_tokens_from_messages() is not presently implemented for model {model}.\r\n",
-							"See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens.\"\"\")"
-						],
-						"outputs": [],
-						"execution_count": 11
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"messages = [\r\n",
-							"    {\"role\": \"system\", \"content\": \"You are a helpful, pattern-following assistant that translates corporate jargon into plain English.\"},\r\n",
-							"    {\"role\": \"system\", \"name\":\"example_user\", \"content\": \"New synergies will help drive top-line growth.\"},\r\n",
-							"    {\"role\": \"system\", \"name\": \"example_assistant\", \"content\": \"Things working well together will increase revenue.\"},\r\n",
-							"    {\"role\": \"system\", \"name\":\"example_user\", \"content\": \"Let's circle back when we have more bandwidth to touch base on opportunities for increased leverage.\"},\r\n",
-							"    {\"role\": \"system\", \"name\": \"example_assistant\", \"content\": \"Let's talk later when we're less busy about how to do better.\"},\r\n",
-							"    {\"role\": \"user\", \"content\": \"This late pivot means we don't have time to boil the ocean for the client deliverable.\"},\r\n",
-							"]"
-						],
-						"outputs": [],
-						"execution_count": 12
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"# example token count from the function defined above\r\n",
-							"model = \"gpt-3.5-turbo-0301\"\r\n",
-							"\r\n",
-							"print(f\"{num_tokens_from_messages(messages, model)} prompt tokens counted.\")"
-						],
-						"outputs": [],
-						"execution_count": 13
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"!pip install openai"
-						],
-						"outputs": [],
-						"execution_count": 14
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"# example token count from the OpenAI API\r\n",
-							"import openai\r\n",
-							"\r\n",
-							"openai.api_key = \"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\"\r\n",
-							"\r\n",
-							"response = openai.ChatCompletion.create(\r\n",
-							"    model=model,\r\n",
-							"    messages=messages,\r\n",
-							"    temperature=0,\r\n",
-							")\r\n",
-							"\r\n",
-							"print(f'{response[\"usage\"][\"prompt_tokens\"]} prompt tokens used.')"
-						],
-						"outputs": [],
-						"execution_count": 15
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"openai.Model.list()"
-						],
-						"outputs": [],
-						"execution_count": 16
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"#https://platform.openai.com/overview\r\n",
-							"\r\n",
-							"import openai\r\n",
-							"import time\r\n",
-							"openai.api_key = \"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\"\r\n",
-							"\r\n",
-							"completion = openai.Completion.create(engine=\"davinci\", prompt=\"This hotel was terrible.\",max_tokens=120)\r\n",
-							"print(completion.choices[0]['text'])"
-						],
-						"outputs": [],
-						"execution_count": 17
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"response = openai.Completion.create(\r\n",
-							"  model=\"text-davinci-003\",\r\n",
-							"  prompt=\"Classify the sentiment in these tweets:\\n\\n1. \\\"I can't stand homework\\\"\\n2. \\\"This sucks. I'm bored 😠\\\"\\n3. \\\"I can't wait for Halloween!!!\\\"\\n4. \\\"My cat is adorable ❤️❤️\\\"\\n5. \\\"I hate chocolate\\\"\\n\\nTweet sentiment ratings:\",\r\n",
-							"  temperature=0,\r\n",
-							"  max_tokens=60,\r\n",
-							"  top_p=1.0,\r\n",
-							"  frequency_penalty=0.0,\r\n",
-							"  presence_penalty=0.0\r\n",
-							")"
-						],
-						"outputs": [],
-						"execution_count": 18
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"response"
-						],
-						"outputs": [],
-						"execution_count": 19
 					}
 				]
 			},
@@ -23244,11 +22817,11 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/synapse-ml-interpretability')]",
+			"name": "[concat(parameters('workspaceName'), '/openai-intro-contar tokens')]",
 			"type": "Microsoft.Synapse/workspaces/notebooks",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
-				"description": "https://microsoft.github.io/SynapseML/docs/features/responsible_ai/Interpretability%20-%20Explanation%20Dashboard/",
+				"description": "https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb",
 				"nbformat": 4,
 				"nbformat_minor": 2,
 				"bigDataPool": {
@@ -23265,7 +22838,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "fb2f934e-66e8-4154-9ba9-6be005174b58"
+						"spark.autotune.trackingId": "cba123be-1315-4ad0-ac2b-362b2f9cb8dc"
 					}
 				},
 				"metadata": {
@@ -23290,15 +22863,627 @@
 						"sparkVersion": "3.2",
 						"nodeCount": 3,
 						"cores": 4,
-						"memory": 28,
-						"automaticScaleJobs": false
+						"memory": 28
 					},
 					"sessionKeepAliveTimeout": 30
 				},
 				"cells": [
 					{
 						"cell_type": "code",
-						"metadata": {},
+						"source": [
+							"!pip install tiktoken"
+						],
+						"outputs": [],
+						"execution_count": 1
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"import tiktoken"
+						],
+						"outputs": [],
+						"execution_count": 2
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"#Cargo un tokenizador concreto\r\n",
+							"encoding = tiktoken.get_encoding(\"cl100k_base\")\r\n",
+							"# o Cargo el tokenizador recomendado para un modelo\r\n",
+							"encoding = tiktoken.encoding_for_model(\"gpt-3.5-turbo\")"
+						],
+						"outputs": [],
+						"execution_count": 3
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"encoding.encode(\"tiktoken está genial!\")"
+						],
+						"outputs": [],
+						"execution_count": 4
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"def num_tokens_from_string(string: str, encoding_name: str) -> int:\r\n",
+							"    \"\"\"Returns the number of tokens in a text string.\"\"\"\r\n",
+							"    encoding = tiktoken.get_encoding(encoding_name)\r\n",
+							"    num_tokens = len(encoding.encode(string))\r\n",
+							"    return num_tokens"
+						],
+						"outputs": [],
+						"execution_count": 5
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"num_tokens_from_string(\"tiktoken está genial!\", \"cl100k_base\")"
+						],
+						"outputs": [],
+						"execution_count": 6
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"encoding.decode([83, 1609, 5963, 15833, 4173, 532, 0])"
+						],
+						"outputs": [],
+						"execution_count": 7
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"[encoding.decode_single_token_bytes(token) for token in [83, 1609, 5963, 15833, 4173, 532, 0]]"
+						],
+						"outputs": [],
+						"execution_count": 8
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"def compare_encodings(example_string: str) -> None:\r\n",
+							"    \"\"\"Prints a comparison of three string encodings.\"\"\"\r\n",
+							"    # print the example string\r\n",
+							"    print(f'\\nExample string: \"{example_string}\"')\r\n",
+							"    # for each encoding, print the # of tokens, the token integers, and the token bytes\r\n",
+							"    for encoding_name in [\"gpt2\", \"p50k_base\", \"cl100k_base\"]:\r\n",
+							"        encoding = tiktoken.get_encoding(encoding_name)\r\n",
+							"        token_integers = encoding.encode(example_string)\r\n",
+							"        num_tokens = len(token_integers)\r\n",
+							"        token_bytes = [encoding.decode_single_token_bytes(token) for token in token_integers]\r\n",
+							"        print()\r\n",
+							"        print(f\"{encoding_name}: {num_tokens} tokens\")\r\n",
+							"        print(f\"token integers: {token_integers}\")\r\n",
+							"        print(f\"token bytes: {token_bytes}\")"
+						],
+						"outputs": [],
+						"execution_count": 9
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"compare_encodings(\"desoxirribonucleiuco\")"
+						],
+						"outputs": [],
+						"execution_count": 10
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"#Contar tokens para las llamadas al API de Chat\r\n",
+							"def num_tokens_from_messages(messages, model=\"gpt-3.5-turbo-0301\"):\r\n",
+							"    \"\"\"Returns the number of tokens used by a list of messages.\"\"\"\r\n",
+							"    try:\r\n",
+							"        encoding = tiktoken.encoding_for_model(model)\r\n",
+							"    except KeyError:\r\n",
+							"        encoding = tiktoken.get_encoding(\"cl100k_base\")\r\n",
+							"    if model == \"gpt-3.5-turbo-0301\":  # note: future models may deviate from this\r\n",
+							"        num_tokens = 0\r\n",
+							"        for message in messages:\r\n",
+							"            num_tokens += 4  # every message follows <im_start>{role/name}\\n{content}<im_end>\\n\r\n",
+							"            for key, value in message.items():\r\n",
+							"                num_tokens += len(encoding.encode(value))\r\n",
+							"                if key == \"name\":  # if there's a name, the role is omitted\r\n",
+							"                    num_tokens += -1  # role is always required and always 1 token\r\n",
+							"        num_tokens += 2  # every reply is primed with <im_start>assistant\r\n",
+							"        return num_tokens\r\n",
+							"    else:\r\n",
+							"        raise NotImplementedError(f\"\"\"num_tokens_from_messages() is not presently implemented for model {model}.\r\n",
+							"See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens.\"\"\")"
+						],
+						"outputs": [],
+						"execution_count": 11
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"messages = [\r\n",
+							"    {\"role\": \"system\", \"content\": \"You are a helpful, pattern-following assistant that translates corporate jargon into plain English.\"},\r\n",
+							"    {\"role\": \"system\", \"name\":\"example_user\", \"content\": \"New synergies will help drive top-line growth.\"},\r\n",
+							"    {\"role\": \"system\", \"name\": \"example_assistant\", \"content\": \"Things working well together will increase revenue.\"},\r\n",
+							"    {\"role\": \"system\", \"name\":\"example_user\", \"content\": \"Let's circle back when we have more bandwidth to touch base on opportunities for increased leverage.\"},\r\n",
+							"    {\"role\": \"system\", \"name\": \"example_assistant\", \"content\": \"Let's talk later when we're less busy about how to do better.\"},\r\n",
+							"    {\"role\": \"user\", \"content\": \"This late pivot means we don't have time to boil the ocean for the client deliverable.\"},\r\n",
+							"]"
+						],
+						"outputs": [],
+						"execution_count": 12
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# example token count from the function defined above\r\n",
+							"model = \"gpt-3.5-turbo-0301\"\r\n",
+							"\r\n",
+							"print(f\"{num_tokens_from_messages(messages, model)} prompt tokens counted.\")"
+						],
+						"outputs": [],
+						"execution_count": 13
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"!pip install openai"
+						],
+						"outputs": [],
+						"execution_count": 14
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# example token count from the OpenAI API\r\n",
+							"import openai\r\n",
+							"\r\n",
+							"openai.api_key = \"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\"\r\n",
+							"\r\n",
+							"response = openai.ChatCompletion.create(\r\n",
+							"    model=model,\r\n",
+							"    messages=messages,\r\n",
+							"    temperature=0,\r\n",
+							")\r\n",
+							"\r\n",
+							"print(f'{response[\"usage\"][\"prompt_tokens\"]} prompt tokens used.')"
+						],
+						"outputs": [],
+						"execution_count": 15
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"openai.Model.list()"
+						],
+						"outputs": [],
+						"execution_count": 16
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"#https://platform.openai.com/overview\r\n",
+							"\r\n",
+							"import openai\r\n",
+							"import time\r\n",
+							"openai.api_key = \"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\"\r\n",
+							"\r\n",
+							"completion = openai.Completion.create(engine=\"davinci\", prompt=\"This hotel was terrible.\",max_tokens=120)\r\n",
+							"print(completion.choices[0]['text'])"
+						],
+						"outputs": [],
+						"execution_count": 17
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"response = openai.Completion.create(\r\n",
+							"  model=\"text-davinci-003\",\r\n",
+							"  prompt=\"Classify the sentiment in these tweets:\\n\\n1. \\\"I can't stand homework\\\"\\n2. \\\"This sucks. I'm bored 😠\\\"\\n3. \\\"I can't wait for Halloween!!!\\\"\\n4. \\\"My cat is adorable ❤️❤️\\\"\\n5. \\\"I hate chocolate\\\"\\n\\nTweet sentiment ratings:\",\r\n",
+							"  temperature=0,\r\n",
+							"  max_tokens=60,\r\n",
+							"  top_p=1.0,\r\n",
+							"  frequency_penalty=0.0,\r\n",
+							"  presence_penalty=0.0\r\n",
+							")"
+						],
+						"outputs": [],
+						"execution_count": 18
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"response"
+						],
+						"outputs": [],
+						"execution_count": 19
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/synapseml-cognitiveservice-text')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "synapsespark",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "37157af9-cdb4-4e8b-8ae0-e2454451c50b"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/c3846bb2-f0ac-4dba-a45a-bc4565b3af79/resourceGroups/Synapse/providers/Microsoft.Synapse/workspaces/synapsevernedev/bigDataPools/synapsespark",
+						"name": "synapsespark",
+						"type": "Spark",
+						"endpoint": "https://synapsevernedev.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/synapsespark",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "3.2",
+						"nodeCount": 3,
+						"cores": 4,
+						"memory": 28
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "code",
+						"source": [
+							"import synapse.ml\r\n",
+							"from synapse.ml.cognitive import *\r\n",
+							"from pyspark.sql.functions import col\r\n",
+							"\r\n",
+							""
+						],
+						"outputs": [],
+						"execution_count": 27
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"#Acceso a través de un linked service\r\n",
+							"#cognitive_service_name = \"azurecognitivevernedev\"\r\n",
+							"service_key = \"6585e5774e584af5b623157b560eebbf\"\r\n",
+							"service_loc=\"westeu\""
+						],
+						"outputs": [],
+						"execution_count": 23
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Create a dataframe that's tied to it's column names\r\n",
+							"df = spark.createDataFrame([\r\n",
+							"  (\"I am so happy today, its sunny\", \"en-US\"),\r\n",
+							"  (\"I am frustrated by this rush hour traffic\", \"en-US\"),\r\n",
+							"  (\"The cognitive services on spark aint bad\", \"en-US\"),\r\n",
+							"], [\"text\", \"language\"])\r\n",
+							"\r\n",
+							"# Run the Text Analytics service with options\r\n",
+							"sentiment = (\r\n",
+							"    TextSentiment()\r\n",
+							"    .setTextCol(\"text\")\r\n",
+							"    .setLocation(service_loc)\r\n",
+							"    .setSubscriptionKey(service_key)\r\n",
+							"    .setOutputCol(\"sentiment\")\r\n",
+							"    .setErrorCol(\"error\")\r\n",
+							"    .setLanguageCol(\"language\")\r\n",
+							")\r\n",
+							"\r\n",
+							"\r\n",
+							"# Show the results of your text query in a table format\r\n",
+							"#display(sentiment.transform(df).select(\"text\", col(\"sentiment\")[0].getItem(\"score\").alias(\"positive score\")))\r\n",
+							"\r\n",
+							"#sentiment.transform(df).select(\"text\", col(\"sentiment.document.sentiment\").alias(\"sentiment\")).printSchema()\r\n",
+							"\r\n",
+							"#sentiment.transform(df)\r\n",
+							""
+						],
+						"outputs": [],
+						"execution_count": 38
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/synapseml-interpretability')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "https://microsoft.github.io/SynapseML/docs/features/responsible_ai/Interpretability%20-%20Explanation%20Dashboard/",
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "synapsespark",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "fdadb111-7613-4586-8e86-01ee4cde112b"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/c3846bb2-f0ac-4dba-a45a-bc4565b3af79/resourceGroups/Synapse/providers/Microsoft.Synapse/workspaces/synapsevernedev/bigDataPools/synapsespark",
+						"name": "synapsespark",
+						"type": "Spark",
+						"endpoint": "https://synapsevernedev.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/synapsespark",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "3.2",
+						"nodeCount": 3,
+						"cores": 4,
+						"memory": 28
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "code",
 						"source": [
 							"import pyspark\r\n",
 							"from IPython import get_ipython\r\n",
@@ -23743,7 +23928,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "1c1fbe7e-ab4b-4596-9e04-b80196fbf434"
+						"spark.autotune.trackingId": "0fb6f669-4cd3-4524-b97c-dc7ca6ed466a"
 					}
 				},
 				"metadata": {
@@ -23768,7 +23953,8 @@
 						"sparkVersion": "3.2",
 						"nodeCount": 3,
 						"cores": 4,
-						"memory": 28
+						"memory": 28,
+						"automaticScaleJobs": false
 					},
 					"sessionKeepAliveTimeout": 30
 				},
@@ -23805,10 +23991,11 @@
 							"import os, urllib"
 						],
 						"outputs": [],
-						"execution_count": 1
+						"execution_count": 2
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"dataFile = \"AdultCensusIncome.csv\"\r\n",
 							"\r\n",
@@ -23818,7 +24005,7 @@
 							"data.show(5)"
 						],
 						"outputs": [],
-						"execution_count": 2
+						"execution_count": 3
 					},
 					{
 						"cell_type": "code",
@@ -23838,7 +24025,7 @@
 							"train, test = data.randomSplit([0.75, 0.25], seed=123)"
 						],
 						"outputs": [],
-						"execution_count": 3
+						"execution_count": 4
 					},
 					{
 						"cell_type": "code",
@@ -23859,7 +24046,7 @@
 							"model = TrainClassifier(model=LogisticRegression(), labelCol=\" income\").fit(train)"
 						],
 						"outputs": [],
-						"execution_count": 4
+						"execution_count": 5
 					},
 					{
 						"cell_type": "code",
@@ -23881,7 +24068,7 @@
 							"metrics.select('accuracy').show()"
 						],
 						"outputs": [],
-						"execution_count": 5
+						"execution_count": 6
 					},
 					{
 						"cell_type": "code",
@@ -23897,10 +24084,359 @@
 							}
 						},
 						"source": [
-							"help(synapse.ml.train.TrainClassifier)"
+							"help(\"synapse.ml.train.TrainClassifier\")"
+						],
+						"outputs": [],
+						"execution_count": 8
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/synapseml-lightGBM')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "https://microsoft.github.io/SynapseML/docs/features/lightgbm/LightGBM%20-%20Overview/",
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "synapsespark",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "540b0a12-d0da-44a2-ab20-ad2efba59a49"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/c3846bb2-f0ac-4dba-a45a-bc4565b3af79/resourceGroups/Synapse/providers/Microsoft.Synapse/workspaces/synapsevernedev/bigDataPools/synapsespark",
+						"name": "synapsespark",
+						"type": "Spark",
+						"endpoint": "https://synapsevernedev.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/synapsespark",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "3.2",
+						"nodeCount": 3,
+						"cores": 4,
+						"memory": 28
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "code",
+						"source": [
+							"from pyspark.sql import SparkSession\r\n",
+							"\r\n",
+							"# Bootstrap Spark Session\r\n",
+							"spark = SparkSession.builder.getOrCreate()\r\n",
+							"\r\n",
+							"from synapse.ml.core.platform import *\r\n",
+							"\r\n",
+							""
+						],
+						"outputs": [],
+						"execution_count": 1
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"df = (\r\n",
+							"    spark.read.format(\"csv\")\r\n",
+							"    .option(\"header\", True)\r\n",
+							"    .option(\"inferSchema\", True)\r\n",
+							"    .load(\r\n",
+							"        \"wasbs://publicwasb@mmlspark.blob.core.windows.net/company_bankruptcy_prediction_data.csv\"\r\n",
+							"    )\r\n",
+							")\r\n",
+							"# print dataset size\r\n",
+							"print(\"records read: \" + str(df.count()))\r\n",
+							"print(\"Schema: \")\r\n",
+							"df.printSchema()"
+						],
+						"outputs": [],
+						"execution_count": 2
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"collapsed": false
+						},
+						"source": [
+							"display(df)"
+						],
+						"outputs": [],
+						"execution_count": 3
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"train, test = df.randomSplit([0.85, 0.15], seed=1)"
+						],
+						"outputs": [],
+						"execution_count": 4
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"from pyspark.ml.feature import VectorAssembler\r\n",
+							"\r\n",
+							"feature_cols = df.columns[1:]\r\n",
+							"featurizer = VectorAssembler(inputCols=feature_cols, outputCol=\"features\")\r\n",
+							"train_data = featurizer.transform(train)[\"Bankrupt?\", \"features\"]\r\n",
+							"test_data = featurizer.transform(test)[\"Bankrupt?\", \"features\"]"
+						],
+						"outputs": [],
+						"execution_count": 5
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"collapsed": false
+						},
+						"source": [
+							"display(train_data.groupBy(\"Bankrupt?\").count())"
 						],
 						"outputs": [],
 						"execution_count": 6
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"from synapse.ml.lightgbm import LightGBMClassifier\r\n",
+							"\r\n",
+							"model = LightGBMClassifier(\r\n",
+							"    objective=\"binary\", featuresCol=\"features\", labelCol=\"Bankrupt?\", isUnbalance=True\r\n",
+							")"
+						],
+						"outputs": [],
+						"execution_count": 7
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"model = model.fit(train_data)"
+						],
+						"outputs": [],
+						"execution_count": 8
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"from synapse.ml.lightgbm import LightGBMClassificationModel\r\n",
+							"\r\n",
+							"if running_on_synapse():\r\n",
+							"    model.saveNativeModel(\"/models/lgbmclassifier.model\")\r\n",
+							"    model = LightGBMClassificationModel.loadNativeModelFromFile(\r\n",
+							"        \"/models/lgbmclassifier.model\"\r\n",
+							"    )\r\n",
+							"if running_on_synapse_internal():\r\n",
+							"    model.saveNativeModel(\"Files/models/lgbmclassifier.model\")\r\n",
+							"    model = LightGBMClassificationModel.loadNativeModelFromFile(\r\n",
+							"        \"Files/models/lgbmclassifier.model\"\r\n",
+							"    )\r\n",
+							"else:\r\n",
+							"    model.saveNativeModel(\"/tmp/lgbmclassifier.model\")\r\n",
+							"    model = LightGBMClassificationModel.loadNativeModelFromFile(\r\n",
+							"        \"/tmp/lgbmclassifier.model\"\r\n",
+							"    )"
+						],
+						"outputs": [],
+						"execution_count": 9
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"import pandas as pd\r\n",
+							"import matplotlib.pyplot as plt\r\n",
+							"\r\n",
+							"feature_importances = model.getFeatureImportances()\r\n",
+							"fi = pd.Series(feature_importances, index=feature_cols)\r\n",
+							"fi = fi.sort_values(ascending=True)\r\n",
+							"f_index = fi.index\r\n",
+							"f_values = fi.values\r\n",
+							"\r\n",
+							"# print feature importances\r\n",
+							"print(\"f_index:\", f_index)\r\n",
+							"print(\"f_values:\", f_values)\r\n",
+							"\r\n",
+							"# plot\r\n",
+							"x_index = list(range(len(fi)))\r\n",
+							"x_index = [x / len(fi) for x in x_index]\r\n",
+							"plt.rcParams[\"figure.figsize\"] = (20, 20)\r\n",
+							"plt.barh(\r\n",
+							"    x_index, f_values, height=0.028, align=\"center\", color=\"tan\", tick_label=f_index\r\n",
+							")\r\n",
+							"plt.xlabel(\"importances\")\r\n",
+							"plt.ylabel(\"features\")\r\n",
+							"plt.show()"
+						],
+						"outputs": [],
+						"execution_count": 10
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"predictions = model.transform(test_data)\r\n",
+							"predictions.limit(10).toPandas()"
+						],
+						"outputs": [],
+						"execution_count": 11
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"collapsed": false
+						},
+						"source": [
+							"from synapse.ml.train import ComputeModelStatistics\r\n",
+							"\r\n",
+							"metrics = ComputeModelStatistics(\r\n",
+							"    evaluationMetric=\"classification\",\r\n",
+							"    labelCol=\"Bankrupt?\",\r\n",
+							"    scoredLabelsCol=\"prediction\",\r\n",
+							").transform(predictions)\r\n",
+							"display(metrics)"
+						],
+						"outputs": [],
+						"execution_count": 12
 					}
 				]
 			},
@@ -24422,6 +24958,52 @@
 			},
 			"dependsOn": [],
 			"location": "eastus"
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/synapseml-databalance')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "51e64a51-3477-4362-bb83-be614e21e8a8"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "python"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "code",
+						"metadata": {},
+						"source": [
+							""
+						],
+						"outputs": [],
+						"execution_count": null
+					}
+				]
+			},
+			"dependsOn": []
 		}
 	]
 }
