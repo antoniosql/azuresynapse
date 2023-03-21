@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "2a2f5e2f-ef4f-4d90-9e53-093c209cbecf"
+				"spark.autotune.trackingId": "500e04fe-867e-47a7-87b6-0f58ff7ed729"
 			}
 		},
 		"metadata": {
@@ -109,7 +109,7 @@
 					"\r\n",
 					"from synapse.ml.core.platform import materializing_display as display"
 				],
-				"execution_count": null
+				"execution_count": 1
 			},
 			{
 				"cell_type": "code",
